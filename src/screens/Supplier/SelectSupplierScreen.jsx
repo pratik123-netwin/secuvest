@@ -54,9 +54,17 @@ const SelectSupplierScreen = ({ route, navigation }) => {
       const q = searchQuery.toLowerCase();
       const matchesSearch = s.name.toLowerCase().includes(q) || s.location.toLowerCase().includes(q);
       const matchesFav = favoritesOnly ? s.isFavorite : true;
-      return matchesSearch && matchesFav;
+      const matchesRegion = selectedRegion ? s.location === selectedRegion : true;
+      return matchesSearch && matchesFav && matchesRegion;
     })
-    .sort((a, b) => sortAZ ? a.name.localeCompare(b.name) : 0);
+    .sort((a, b) => {
+      // Favourites always bubble to the top
+      if (a.isFavorite && !b.isFavorite) return -1;
+      if (!a.isFavorite && b.isFavorite) return 1;
+      // Within groups: A-Z if toggled
+      if (sortAZ) return a.name.localeCompare(b.name);
+      return 0;
+    });
 
   // Multi-select: toggle ID in/out of array
   const toggleMultiSelect = (id) => {
@@ -76,7 +84,7 @@ const SelectSupplierScreen = ({ route, navigation }) => {
 
   const handleSingleContinue = () => {
     const supplier = suppliers.find(s => s.id === singleSelectedId);
-    if (supplier) navigation.navigate('SupplierProfile', { selectedSuppliers: [supplier] });
+    if (supplier) navigation.navigate('SupplierDetail', { supplier });
   };
 
   const handleMultiContinue = () => {
@@ -161,7 +169,7 @@ const SelectSupplierScreen = ({ route, navigation }) => {
         retailers={[]}
         regions={['Sunnyvale', 'Riverwood', 'Maple Grove', 'Cedar Valley', 'Ocean City']}
         selectedRetailer=""
-        setSelectedRetailer={() => {}}
+        setSelectedRetailer={() => { }}
         selectedRegion={selectedRegion}
         setSelectedRegion={setSelectedRegion}
         sortAZ={sortAZ}
@@ -180,11 +188,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 10, paddingBottom: 15,
   },
-  headerTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
+  headerTitle: { fontSize: 16, fontWeight: '500', color: '#181D27' },
   toggleRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginHorizontal: 20, marginBottom: 16, backgroundColor: '#EEF2FF',
+    marginHorizontal: 20, marginBottom: 16, backgroundColor: '#FAFAFA',
     paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12,
+    borderColor: '#EAEAED', borderWidth: 1
   },
   toggleLabel: { fontSize: 14, fontWeight: '500', color: '#6B7280' },
   toggleLabelActive: { color: '#4F46E5', fontWeight: '600' },

@@ -22,22 +22,25 @@ const TabBar = ({ tabs, activeTab, onTabPress }) => (
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 64,
     padding: 4,
     marginHorizontal: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#EAEAED'
   },
   tab: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 64,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activeTab: { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2 },
+  activeTab: { backgroundColor: '#ECF1FF', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2, borderColor: '#9DAFFF', borderWidth: 1 },
   label: { fontSize: 14, fontWeight: '500', color: '#6B7280' },
-  activeLabel: { color: '#111827', fontWeight: '700' },
+  activeLabel: { color: '#4238F3', fontWeight: '700' },
 });
 
 export default TabBar;

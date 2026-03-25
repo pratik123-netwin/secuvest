@@ -4,45 +4,69 @@ import { Building, Star, ChevronRight } from 'lucide-react-native';
 import { COLORS } from '../../constants/colors';
 import Checkbox from './Checkbox';
 
-const SupplierCard = ({ 
-  supplier, 
-  onPress, 
-  isMultiSelect = false, 
-  isSelected = false, 
+const SupplierCard = ({
+  supplier,
+  onPress,
+  isMultiSelect = false,
+  isSelected = false,
   singleSelected = false,
   onToggleSelect,
-  onToggleFavorite 
+  onToggleFavorite,
 }) => {
   const { name, location, productCount, isFavorite } = supplier;
 
+  // ── Container styles ─────────────────────────────────────────────────────────
   let containerStyle = [styles.container];
-  let iconBoxStyle = [styles.iconBox];
-  let iconColor = '#9CA3AF';
-  let isFavoriteFilled = false;
 
   if (isMultiSelect) {
-    if (isSelected) containerStyle.push(styles.multiSelectedContainer);
+    // Multi-select: blue highlight when checked
+    if (isSelected) containerStyle.push(styles.blueSelectedContainer);
   } else {
-    // Highlight yellow if this card is the single-selected one OR it's a favourite
-    if (singleSelected || isFavorite) {
+    // Single-select: blue when selected (same as multi), amber when favourite only
+    if (singleSelected) {
+      containerStyle.push(styles.blueSelectedContainer);
+    } else if (isFavorite) {
       containerStyle.push(styles.favoriteContainer);
-      iconBoxStyle.push(styles.favoriteIconBox);
-      iconColor = '#F59E0B';
-      isFavoriteFilled = true;
     }
   }
 
+  // ── Icon box ─────────────────────────────────────────────────────────────────
+  let iconBoxStyle = [styles.iconBox];
+  let iconColor = '#9CA3AF';
+
+  if (!isMultiSelect && singleSelected) {
+    // Blue selected state
+    iconBoxStyle.push(styles.blueIconBox);
+    iconColor = COLORS.primary;
+  } else if (!isMultiSelect && isFavorite) {
+    // Orange favourite state
+    iconBoxStyle.push(styles.favoriteIconBox);
+    iconColor = '#F59E0B';
+  } else if (isMultiSelect && isSelected) {
+    iconBoxStyle.push(styles.blueIconBox);
+    iconColor = COLORS.primary;
+  }
+
+  // ── Top-row divider ──────────────────────────────────────────────────────────
+  let topRowDividerColor = '#EAEAED'; // default
+  if (singleSelected || (isMultiSelect && isSelected)) {
+    topRowDividerColor = "#C2CFFF"; // blue
+  } else if (!isMultiSelect && isFavorite) {
+    topRowDividerColor = '#FEDF89'; // amber
+  }
+
+  const topRowStyle = [styles.topRow, { borderBottomColor: topRowDividerColor }];
 
   return (
-    <TouchableOpacity 
-      activeOpacity={0.7} 
+    <TouchableOpacity
+      activeOpacity={0.7}
       onPress={isMultiSelect ? onToggleSelect : onPress}
       style={containerStyle}
     >
-      <View style={styles.topRow}>
+      <View style={topRowStyle}>
         <View style={styles.topLeft}>
           <View style={iconBoxStyle}>
-            <Building size={20} color={iconColor} strokeWidth={isFavorite ? 2 : 1.5} />
+            <Building size={20} color={iconColor} strokeWidth={1.5} />
           </View>
           <View style={styles.titleBlock}>
             <Text style={styles.nameText} numberOfLines={1}>{name}</Text>
@@ -50,15 +74,20 @@ const SupplierCard = ({
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={styles.actionSlot} 
+        {/* Action slot: Checkbox in multi-select, Star (favourite) in single mode */}
+        <TouchableOpacity
+          style={styles.actionSlot}
           onPress={isMultiSelect ? onToggleSelect : onToggleFavorite}
           activeOpacity={0.7}
         >
           {isMultiSelect ? (
             <Checkbox isChecked={isSelected} onToggle={onToggleSelect} />
           ) : (
-             <Star size={22} color={isFavorite ? '#F59E0B' : '#D1D5DB'} fill={isFavoriteFilled ? '#F59E0B' : 'transparent'} />
+            <Star
+              size={22}
+              color={isFavorite ? '#F59E0B' : '#D1D5DB'}
+              fill={isFavorite ? '#F59E0B' : 'transparent'}
+            />
           )}
         </TouchableOpacity>
       </View>
@@ -79,22 +108,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 16,
-    padding: 16,
     marginBottom: 12,
   },
-  favoriteContainer: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FDE047',
-  },
-  multiSelectedContainer: {
+
+  // Blue — used for BOTH single-select AND multi-select checked state
+  blueSelectedContainer: {
     backgroundColor: '#EEF2FF',
-    borderColor: COLORS.primary, // Blue border
+    borderColor: '#C2CFFF',
   },
+
+  // Amber — favourite only (in single-select mode, when NOT selected)
+  favoriteContainer: {
+    backgroundColor: '#FFFAEB',
+    borderColor: '#FEDF89',
+  },
+
+  // ── Top row ──────────────────────────────────────────────────────────────────
   topRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    padding: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAEAED', // overridden inline per state
   },
   topLeft: {
     flexDirection: 'row',
@@ -112,13 +150,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     marginRight: 12,
   },
+  blueIconBox: {
+    borderColor: '#C2CFFF',
+    backgroundColor: '#EEF2FF',
+  },
   favoriteIconBox: {
     borderColor: '#FCD34D',
     backgroundColor: '#FEF3C7',
   },
-  titleBlock: {
-    flex: 1,
-  },
+  titleBlock: { flex: 1 },
   nameText: {
     fontSize: 16,
     fontWeight: '700',
@@ -134,10 +174,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  // ── Bottom row ────────────────────────────────────────────────────────────────
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   pill: {
     backgroundColor: '#F3F4F6',
@@ -151,7 +195,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     fontWeight: '500',
-  }
+  },
 });
 
 export default SupplierCard;

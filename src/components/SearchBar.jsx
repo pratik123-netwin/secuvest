@@ -2,15 +2,16 @@ import React from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Search, SlidersHorizontal } from 'lucide-react-native';
 
-const SearchBar = ({ 
-  searchQuery, 
-  setSearchQuery, 
-  onFilterPress, 
+const SearchBar = ({
+  searchQuery,
+  setSearchQuery,
+  onFilterPress,
   resultsText,
-  placeholder = "Search..."
+  placeholder = "Search...",
+  isMatrics = false,
 }) => {
   return (
-    <View style={styles.searchSection}>
+    <View style={isMatrics ? styles.searchSectionMatrics : styles.searchSection}>
       <View style={styles.searchInputContainer}>
         <Search size={18} color="#9CA3AF" style={styles.searchIcon} />
         <TextInput
@@ -33,15 +34,16 @@ const SearchBar = ({
 
 const styles = StyleSheet.create({
   searchSection: { paddingHorizontal: 20, marginBottom: 12 },
-  searchInputContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#FFFFFF', 
-    borderWidth: 1, 
-    borderColor: '#E5E7EB', 
-    borderRadius: 999, 
+  searchSectionMatrics: { marginBottom: 12 },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 999,
     paddingHorizontal: 14,
-    height: 46 
+    height: 46
   },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, fontSize: 14, color: '#111827', height: '100%' },

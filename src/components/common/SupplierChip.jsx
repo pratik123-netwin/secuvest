@@ -6,8 +6,8 @@ const SupplierChip = ({ label, onRemove }) => (
   <View style={styles.chip}>
     <Text style={styles.label} numberOfLines={1}>{label}</Text>
     {onRemove && (
-      <TouchableOpacity onPress={onRemove} style={styles.closeBtn} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-        <X size={12} color="#6B7280" strokeWidth={2.5} />
+      <TouchableOpacity onPress={() => { }} style={styles.closeBtn} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+        <X size={12} color="#ffffff" strokeWidth={2.5} />
       </TouchableOpacity>
     )}
   </View>
@@ -17,16 +17,16 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.15)',
     borderWidth: 1,
-    borderColor: '#C7D2FE',
+    borderColor: '#C2CFFF',
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    marginRight: 6,
   },
-  label: { fontSize: 13, fontWeight: '500', color: '#4338CA', maxWidth: 100 },
-  closeBtn: { marginLeft: 6 },
+  label: { fontSize: 11, fontWeight: '500', color: '#FFFFFF', maxWidth: 72 },
+  closeBtn: { marginLeft: 4 },
 });
 
 export default SupplierChip;

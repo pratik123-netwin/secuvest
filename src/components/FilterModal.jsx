@@ -17,7 +17,8 @@ const FilterModal = ({
   setSortAZ,
   favoritesOnly,
   setFavoritesOnly,
-  onApply
+  onApply,
+  showFavorites = true,   // set false for product list filters
 }) => {
   const [openDropdown, setDropdownOpen] = useState(null);
 
@@ -138,22 +139,23 @@ const FilterModal = ({
               </View>
             </View>
 
-            {/* Favorites Card */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Favorites</Text>
-              <Text style={styles.cardSubtitle}>Show only favorite stores</Text>
-              
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>Show Favorites Only</Text>
-                <Switch
-                  value={favoritesOnly}
-                  onValueChange={setFavoritesOnly}
-                  trackColor={{ false: '#E5E7EB', true: '#4F46E5' }}
-                  thumbColor={'#FFFFFF'}
-                  ios_backgroundColor="#E5E7EB"
-                />
+            {/* Favorites Card — hidden for product list filters */}
+            {showFavorites && (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Favorites</Text>
+                <Text style={styles.cardSubtitle}>Show only favorite stores</Text>
+                <View style={styles.switchRow}>
+                  <Text style={styles.switchLabel}>Show Favorites Only</Text>
+                  <Switch
+                    value={favoritesOnly}
+                    onValueChange={setFavoritesOnly}
+                    trackColor={{ false: '#E5E7EB', true: '#4F46E5' }}
+                    thumbColor={'#FFFFFF'}
+                    ios_backgroundColor="#E5E7EB"
+                  />
+                </View>
               </View>
-            </View>
+            )}
 
           </ScrollView>
 

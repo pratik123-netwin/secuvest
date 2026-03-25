@@ -4,7 +4,7 @@ import { store } from './src/store';
 import AppNavigator from './src/navigation/AppNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { restoreToken } from './src/store/slices/authSlice';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
@@ -37,14 +37,17 @@ const Root = () => {
     );
   }
 
-  return (
-    <AppNavigator />
-  );
+  return <AppNavigator />;
 };
 
 export default function App() {
   return (
     <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFFFFF"
+        translucent={false}
+      />
       <KeyboardProvider>
         <Provider store={store}>
           <Root />
@@ -53,3 +56,4 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+

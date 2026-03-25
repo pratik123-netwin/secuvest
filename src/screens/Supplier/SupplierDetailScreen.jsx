@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
   summaryCard: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#3075DF',
     marginHorizontal: 20, borderRadius: 16, padding: 16, marginBottom: 16,
     flexDirection: 'row', alignItems: 'center',
   },
@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center', alignItems: 'center', marginRight: 12,
+    borderWidth: 1, borderColor: '#FFFFFF'
   },
   summaryTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
   summarySubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },

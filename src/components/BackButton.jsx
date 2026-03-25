@@ -15,9 +15,9 @@ const BackButton = ({ onPress, style, color = '#6B7280', textStyle, disabled = f
   };
 
   return (
-    <TouchableOpacity 
-      onPress={handlePress} 
-      style={[styles.button, style]} 
+    <TouchableOpacity
+      onPress={handlePress}
+      style={[styles.button, style]}
       activeOpacity={0.7}
       disabled={disabled}
     >
@@ -31,13 +31,15 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 60,
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    gap: 4,
   },
   text: {
     fontSize: 14,
-    marginLeft: 4,
     fontWeight: '500',
-  }
+  },
 });
 
 export default BackButton;

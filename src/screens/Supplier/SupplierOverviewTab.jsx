@@ -17,20 +17,37 @@ const ProgressBar = ({ value, max }) => {
   );
 };
 
-const RangedDerangedRow = ({ ranged, deranged, onDrillRanged, onDrillDeranged }) => (
-  <View style={styles.rdRow}>
-    <TouchableOpacity style={[styles.rdCard, styles.rdCardGreen]} onPress={onDrillRanged}>
-      <Text style={styles.rdLabel}>Ranged</Text>
-      <CheckCircle2 size={18} color="#16A34A" />
-      <Text style={styles.rdValue}>{ranged}</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={[styles.rdCard, styles.rdCardRed]} onPress={onDrillDeranged}>
-      <Text style={styles.rdLabel}>De-ranged</Text>
-      <Layers size={18} color="#DC2626" />
-      <Text style={[styles.rdValue, { color: '#DC2626' }]}>{deranged}</Text>
-    </TouchableOpacity>
-  </View>
-);
+// derangedVariant: 'red' (Article Performance) | 'amber' (Stock Health)
+const RangedDerangedRow = ({ ranged, deranged, onDrillRanged, onDrillDeranged, derangedVariant = 'red' }) => {
+  const derangedCard = derangedVariant === 'amber'
+    ? { bg: '#FFFBEB', border: '#FDE68A', iconColor: '#D97706', valColor: '#D97706' }
+    : { bg: '#FEF2F2', border: '#FECACA', iconColor: '#DC2626', valColor: '#DC2626' };
+
+  return (
+    <View style={styles.rdRow}>
+      {/* Ranged — green */}
+      <TouchableOpacity style={[styles.rdCard, styles.rdCardGreen]} onPress={onDrillRanged}>
+        <View style={styles.rdTopRow}>
+          <Text style={styles.rdLabel}>Ranged</Text>
+          <CheckCircle2 size={18} color="#16A34A" />
+        </View>
+        <Text style={[styles.rdValue, { color: '#16A34A' }]}>{ranged}</Text>
+      </TouchableOpacity>
+
+      {/* De-ranged — color varies by section */}
+      <TouchableOpacity
+        style={[styles.rdCard, { backgroundColor: derangedCard.bg, borderColor: derangedCard.border, borderWidth: 1 }]}
+        onPress={onDrillDeranged}
+      >
+        <View style={styles.rdTopRow}>
+          <Text style={styles.rdLabel}>De-ranged</Text>
+          <Layers size={18} color={derangedCard.iconColor} />
+        </View>
+        <Text style={[styles.rdValue, { color: derangedCard.valColor }]}>{deranged}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const SupplierOverviewTab = ({ supplierId, navigation }) => {
   const [metrics, setMetrics] = useState(null);
@@ -64,13 +81,14 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
       {/* ── Article Performance ── */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Article Performance</Text>
+        <TouchableOpacity onPress={() => drilldown('Article Performance', 'articlePerformance')}>
+          <ArrowUpRight size={18} color="#9CA3AF" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Article Performance</Text>
-          <TouchableOpacity onPress={() => drilldown('Article Performance', 'articlePerformance')}>
-            <ArrowUpRight size={18} color="#9CA3AF" />
-          </TouchableOpacity>
-        </View>
+
         <View style={styles.metaRow}>
           <Text style={styles.metaLabel}>Active Article</Text>
           <Text style={styles.metaValue}>{ap.active} / {ap.total}</Text>
@@ -84,13 +102,14 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
       </View>
 
       {/* ── Stock Health ── */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Stock Health</Text>
+        <TouchableOpacity onPress={() => drilldown('Stock Health', 'stockHealth')}>
+          <ArrowUpRight size={18} color="#9CA3AF" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Stock Health</Text>
-          <TouchableOpacity onPress={() => drilldown('Stock Health', 'stockHealth')}>
-            <ArrowUpRight size={18} color="#9CA3AF" />
-          </TouchableOpacity>
-        </View>
+
         <View style={styles.metaRow}>
           <Text style={styles.metaLabel}>Stock Availability</Text>
           <Text style={styles.metaValue}>{sh.availabilityPercent}%</Text>
@@ -98,40 +117,46 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
         <ProgressBar value={sh.availabilityPercent} max={100} />
         <RangedDerangedRow
           ranged={sh.ranged} deranged={sh.deranged}
+          derangedVariant="amber"
           onDrillRanged={() => drilldown('Stock Health', 'stockHealth')}
           onDrillDeranged={() => drilldown('Stock Health', 'stockHealth')}
         />
       </View>
 
       {/* ── Sales Metrics ── */}
-      <View style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Sales Metrics</Text>
-          <TouchableOpacity onPress={() => drilldown('Sales Metrics', 'salesMetrics')}>
-            <ArrowUpRight size={18} color="#F59E0B" />
-          </TouchableOpacity>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Sales Metrics</Text>
+        <TouchableOpacity onPress={() => drilldown('Sales Metrics', 'salesMetrics')}>
+          <ArrowUpRight size={18} color="#9CA3AF" />
+        </TouchableOpacity>
+      </View>
+      {/* Rate of Sale — own card */}
+      <View style={styles.metricBox}>
+        <View style={styles.metricIconBox}>
+          <TrendingUp size={18} color="#6B7280" />
         </View>
-        <View style={styles.iconRow}>
-          <TrendingUp size={20} color="#9CA3AF" style={{ marginRight: 10 }} />
-          <View>
-            <Text style={styles.iconRowLabel}>Rate of Sale</Text>
-            <Text style={styles.iconRowValue}>{sm.rateOfSale}</Text>
-          </View>
+        <View>
+          <Text style={styles.iconRowLabel}>Rate of Sale</Text>
+          <Text style={styles.iconRowValue}>{sm.rateOfSale}</Text>
         </View>
-        <View style={[styles.iconRow, { marginTop: 12 }]}>
-          <Activity size={20} color="#9CA3AF" style={{ marginRight: 10 }} />
-          <View>
-            <Text style={styles.iconRowLabel}>No Sales (30 days)</Text>
-            <Text style={styles.iconRowValue}>{sm.noSales30Days}</Text>
-          </View>
+      </View>
+
+      {/* No Sales — own card */}
+      <View style={styles.metricBox}>
+        <View style={styles.metricIconBox}>
+          <Activity size={18} color="#6B7280" />
+        </View>
+        <View>
+          <Text style={styles.iconRowLabel}>No Sales (30 days)</Text>
+          <Text style={styles.iconRowValue}>{sm.noSales30Days}</Text>
         </View>
       </View>
 
       {/* ── Wastage Tracking ── */}
-      <View style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Wastage Tracking</Text>
-        </View>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Wastage Tracking</Text>
+      </View>
+      <View style={[styles.sectionCard, { borderColor: '#FECDCA', gap: 16 }]}>
         <View style={styles.rdRow}>
           <View style={[styles.rdCard, styles.rdCardRed]}>
             <View style={styles.rdTopRow}>
@@ -150,8 +175,10 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
             <Text style={styles.rdSub}>vs Total Sales</Text>
           </View>
         </View>
-        <View style={styles.iconRow}>
-          <Activity size={20} color="#9CA3AF" style={{ marginRight: 10 }} />
+        <View style={styles.metricBox}>
+          <View style={styles.metricIconBox}>
+            <Activity size={20} color="#9CA3AF" style={{ marginRight: 10 }} />
+          </View>
           <View>
             <Text style={styles.iconRowLabel}>Wastage Status</Text>
             <Text style={styles.iconRowValue}>{wt.statusText}</Text>
@@ -174,7 +201,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  sectionTitle: { fontSize: 15, fontWeight: '500', color: '#111827' },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   metaLabel: { fontSize: 13, color: '#6B7280' },
   metaValue: { fontSize: 13, fontWeight: '600', color: '#111827' },
@@ -186,10 +213,30 @@ const styles = StyleSheet.create({
   },
   rdCardGreen: { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
   rdCardRed: { backgroundColor: '#FEF2F2', borderColor: '#FECACA' },
-  rdTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  rdLabel: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
+  rdTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  rdLabel: { fontSize: 12, color: '#6B7280' },
   rdValue: { fontSize: 24, fontWeight: '700', color: '#16A34A' },
   rdSub: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
+  // Sales Metrics individual row cards
+  metricBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+  },
+  metricIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   iconRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 4 },
   iconRowLabel: { fontSize: 13, color: '#6B7280', marginBottom: 2 },
   iconRowValue: { fontSize: 14, fontWeight: '600', color: '#111827' },

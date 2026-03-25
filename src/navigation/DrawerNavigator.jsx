@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import BottomTabNavigator from './BottomTabNavigator';
 import SupplierNavigator from './SupplierNavigator';
-import { COLORS } from '../constants/colors';
 import images from '../constants/images';
 import { Home, MessageSquare, Clock, Building, Box, User, Settings, Bell, HelpCircle, LogOut, X } from 'lucide-react-native';
 
@@ -67,8 +66,8 @@ const CustomDrawerContent = (props) => {
           <View style={styles.sectionMargin} />
           <SectionTitle title="Settings" />
           <DrawerItemName icon={User} label="Profile" />
-          <DrawerItemName icon={Settings} label="Settings" />
-          <DrawerItemName icon={Bell} label="Notifications" />
+          <DrawerItemName icon={Settings} label="Settings" isSoon={true} />
+          <DrawerItemName icon={Bell} label="Notifications" isSoon={true} />
           <DrawerItemName icon={HelpCircle} label="Help & Support" isSoon={true} />
         </View>
 
