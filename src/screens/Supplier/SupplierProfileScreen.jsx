@@ -200,6 +200,8 @@ const SupplierProfileScreen = ({ route, navigation }) => {
         favoritesOnly={false}
         setFavoritesOnly={() => {}}
         showFavorites={activeTab === 'Suppliers'}
+        retailerLabel="Store Banner"
+        retailerPlaceholder="All Banners"
         onApply={() => setFilterVisible(false)}
       />
     </SafeAreaView>

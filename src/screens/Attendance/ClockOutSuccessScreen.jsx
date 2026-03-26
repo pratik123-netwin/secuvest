@@ -1,12 +1,19 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StackActions } from '@react-navigation/native';
 import { CheckCircle, Home } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
 import StoreInfoCard from '../../components/StoreInfoCard';
 
 const ClockOutSuccessScreen = ({ route, navigation }) => {
   const { store, status, startTime } = route.params;
+
+  // Block hardware back — the flow is complete, user must use "Return to Home"
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => handler.remove();
+  }, []);
 
   const today = new Date();
   const dateString = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -49,7 +56,13 @@ const ClockOutSuccessScreen = ({ route, navigation }) => {
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.homeBtn}
-            onPress={() => navigation.navigate('RootTabs', { screen: 'Home' })}
+            onPress={() => {
+              // 1. Reset the Attendance stack to StoreSelection (same frame, no flash)
+              navigation.dispatch(StackActions.popToTop());
+              // 2. Directly tell the BottomTabNavigator (our parent) to switch to Home
+              //    Using getParent() bypasses the Drawer and actually changes the active tab
+              navigation.getParent()?.navigate('Home');
+            }}
           >
             <Home size={16} color="#4B5563" style={{ marginRight: 8 }} />
             <Text style={styles.homeBtnText}>Return to Home</Text>

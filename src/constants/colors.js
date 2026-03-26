@@ -9,6 +9,6 @@ export const COLORS = {
   error: '#EF4444',
   success: '#10B981',
   border: '#E5E7EB',
-  inputBackground: '#F3F4F6',
+  inputBackground: '#FFFFFF',
   disabled: '#9CA3AF',
 };

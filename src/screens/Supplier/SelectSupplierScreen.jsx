@@ -176,6 +176,8 @@ const SelectSupplierScreen = ({ route, navigation }) => {
         setSortAZ={setSortAZ}
         favoritesOnly={favoritesOnly}
         setFavoritesOnly={setFavoritesOnly}
+        retailerLabel="Store Banner"
+        retailerPlaceholder="All Banners"
         onApply={() => setFilterVisible(false)}
       />
     </SafeAreaView>

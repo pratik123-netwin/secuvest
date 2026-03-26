@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   inputContainer: {
-    height: 50,
+    height: 45,
     backgroundColor: COLORS.inputBackground,
     flexDirection: 'row',
     paddingHorizontal: 15,

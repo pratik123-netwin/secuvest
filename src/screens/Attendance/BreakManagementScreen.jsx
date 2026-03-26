@@ -32,7 +32,7 @@ const BreakManagementScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <BackButton />
+        <BackButton onPress={() => navigation.navigate('RootTabs', { screen: 'Home' })} />
         <Text style={styles.headerTitle}>Break Management</Text>
         <View style={{ width: 60 }} />
       </View>

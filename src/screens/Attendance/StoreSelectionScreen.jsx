@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getStores, getRetailers, getRegions } from '../../services/attendanceService';
 import { COLORS } from '../../constants/colors';
@@ -24,9 +25,22 @@ const StoreSelectionScreen = ({ navigation }) => {
   const [sortAZ, setSortAZ] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  // On every focus: check for an active session, redirect if found, then load store data
+  useFocusEffect(
+    useCallback(() => {
+      const checkSessionAndLoad = async () => {
+        const sessionStr = await AsyncStorage.getItem('active_session');
+        if (sessionStr) {
+          const session = JSON.parse(sessionStr);
+          // Active session found — go straight to active session screen
+          navigation.replace('ActiveSession', { store: session.store, status: session.status });
+          return;
+        }
+        loadData();
+      };
+      checkSessionAndLoad();
+    }, [navigation])
+  );
 
   const loadData = async () => {
     setLoading(true);
@@ -88,7 +102,7 @@ const StoreSelectionScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <BackButton />
+        <BackButton onPress={() => navigation.navigate('RootTabs', { screen: 'Home' })} />
         <Text style={styles.headerTitle}>Attendance</Text>
         <View style={{ width: 60 }} />
       </View>

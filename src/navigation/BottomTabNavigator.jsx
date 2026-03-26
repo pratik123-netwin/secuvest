@@ -58,7 +58,11 @@ const BottomTabNavigator = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Clock" component={AttendanceNavigator} />
+      <Tab.Screen
+        name="Clock"
+        component={AttendanceNavigator}
+        options={{ unmountOnBlur: true }}
+      />
       <Tab.Screen 
         name="Label" 
         component={() => <PlaceholderScreen name="Label" />}

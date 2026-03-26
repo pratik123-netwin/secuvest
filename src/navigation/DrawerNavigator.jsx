@@ -5,6 +5,8 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import BottomTabNavigator from './BottomTabNavigator';
 import SupplierNavigator from './SupplierNavigator';
+import ProductsNavigator from './ProductsNavigator';
+import ProfileScreen from '../screens/Profile/ProfileScreen';
 import images from '../constants/images';
 import { Home, MessageSquare, Clock, Building, Box, User, Settings, Bell, HelpCircle, LogOut, X } from 'lucide-react-native';
 
@@ -54,18 +56,21 @@ const CustomDrawerContent = (props) => {
           {/* Main Menu */}
           <SectionTitle title="Main Menu" />
           <DrawerItemName icon={Home} label="Home" active={true} onPress={() => props.navigation.navigate('RootTabs', { screen: 'Home' })} />
-          <DrawerItemName icon={Clock} label="Attendance" onPress={() => props.navigation.navigate('RootTabs', { screen: 'Clock' })} />
+          <DrawerItemName icon={Clock} label="Attendance" onPress={() => {
+            props.navigation.closeDrawer();
+            props.navigation.navigate('RootTabs', { screen: 'Clock' });
+          }} />
 
           {/* Master Data */}
           <View style={styles.sectionMargin} />
           <SectionTitle title="Master Data" />
           <DrawerItemName icon={Building} label="Suppliers" onPress={() => { props.navigation.closeDrawer(); props.navigation.navigate('SupplierFlow'); }} />
-          <DrawerItemName icon={Box} label="Products" />
+          <DrawerItemName icon={Box} label="Products" onPress={() => { props.navigation.closeDrawer(); props.navigation.navigate('ProductsFlow'); }} />
 
           {/* Settings */}
           <View style={styles.sectionMargin} />
           <SectionTitle title="Settings" />
-          <DrawerItemName icon={User} label="Profile" />
+          <DrawerItemName icon={User} label="Profile" onPress={() => { props.navigation.closeDrawer(); props.navigation.navigate('ProfileFlow'); }} />
           <DrawerItemName icon={Settings} label="Settings" isSoon={true} />
           <DrawerItemName icon={Bell} label="Notifications" isSoon={true} />
           <DrawerItemName icon={HelpCircle} label="Help & Support" isSoon={true} />
@@ -98,6 +103,8 @@ const DrawerNavigator = () => {
     >
       <Drawer.Screen name="RootTabs" component={BottomTabNavigator} />
       <Drawer.Screen name="SupplierFlow" component={SupplierNavigator} />
+      <Drawer.Screen name="ProductsFlow" component={ProductsNavigator} />
+      <Drawer.Screen name="ProfileFlow" component={ProfileScreen} />
     </Drawer.Navigator>
   );
 };

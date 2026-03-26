@@ -19,8 +19,14 @@ const FilterModal = ({
   setFavoritesOnly,
   onApply,
   showFavorites = true,   // set false for product list filters
+  retailerLabel = 'Retailer',   // e.g. 'Categories', 'Store Banner'
+  regionLabel = 'Region',        // e.g. 'Suppliers', 'Region'
+  retailerPlaceholder,  // defaults to 'All {retailerLabel}s'
+  regionPlaceholder,    // defaults to 'All {regionLabel}s'
 }) => {
   const [openDropdown, setDropdownOpen] = useState(null);
+  const retPlaceholder = retailerPlaceholder || `All ${retailerLabel}s`;
+  const regPlaceholder = regionPlaceholder || `All ${regionLabel}s`;
 
   const toggleDropdown = (name) => {
     setDropdownOpen(openDropdown === name ? null : name);
@@ -70,13 +76,13 @@ const FilterModal = ({
               <Text style={styles.cardSubtitle}>Filter by category and location</Text>
               
               <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Retailer</Text>
+                <Text style={styles.fieldLabel}>{retailerLabel}</Text>
                 <TouchableOpacity 
                   style={[styles.dropdownBox, openDropdown === 'retailer' && styles.dropdownBoxActive]} 
                   onPress={() => toggleDropdown('retailer')}
                 >
                   <Text style={[styles.dropdownText, selectedRetailer && styles.dropdownTextSelected]}>
-                    {selectedRetailer || 'All Retailers'}
+                    {selectedRetailer || retPlaceholder}
                   </Text>
                   <ChevronDown size={18} color="#9CA3AF" />
                 </TouchableOpacity>
@@ -84,13 +90,13 @@ const FilterModal = ({
               </View>
 
               <View style={[styles.fieldContainer, { marginBottom: 0 }]}>
-                <Text style={styles.fieldLabel}>Region</Text>
+                <Text style={styles.fieldLabel}>{regionLabel}</Text>
                 <TouchableOpacity 
                   style={[styles.dropdownBox, openDropdown === 'region' && styles.dropdownBoxActive]} 
                   onPress={() => toggleDropdown('region')}
                 >
                   <Text style={[styles.dropdownText, selectedRegion && styles.dropdownTextSelected]}>
-                    {selectedRegion || 'All Regions'}
+                    {selectedRegion || regPlaceholder}
                   </Text>
                   <ChevronDown size={18} color="#9CA3AF" />
                 </TouchableOpacity>

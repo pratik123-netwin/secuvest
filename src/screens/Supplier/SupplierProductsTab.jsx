@@ -78,6 +78,8 @@ const SupplierProductsTab = ({ supplierId }) => {
         favoritesOnly={false}
         setFavoritesOnly={() => {}}
         showFavorites={false}
+        retailerLabel="Store Banner"
+        retailerPlaceholder="All Banners"
         onApply={() => setFilterVisible(false)}
       />
     </>

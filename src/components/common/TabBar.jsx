@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   activeTab: { backgroundColor: '#ECF1FF', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2, borderColor: '#9DAFFF', borderWidth: 1 },
   label: { fontSize: 14, fontWeight: '500', color: '#6B7280' },
-  activeLabel: { color: '#4238F3', fontWeight: '700' },
+  activeLabel: { color: '#4238F3', fontWeight: '500' },
 });
 
 export default TabBar;
