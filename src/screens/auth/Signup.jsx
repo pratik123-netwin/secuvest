@@ -6,10 +6,8 @@ import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { validateName, validateEmailOrPhone, validatePassword } from '../../utils/validation';
 import { COLORS } from '../../constants/colors';
-import { Image } from 'react-native';
-import images from '../../constants/images';
-import { User } from 'lucide-react-native';
-import BackButton from '../../components/BackButton';
+import { User, Mail } from 'lucide-react-native';
+import AuthHeader, { AuthFooter } from '../../components/AuthHeader';
 
 const Signup = ({ navigation }) => {
   const [form, setForm] = useState({ name: '', day: '', month: '', year: '', gender: '', emailOrPhone: '', password: '' });
@@ -32,7 +30,7 @@ const Signup = ({ navigation }) => {
       setErrors(newErrors);
       return;
     }
-    
+
     setErrors({});
     setLoading(true);
 
@@ -45,18 +43,13 @@ const Signup = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      
-      <BackButton color="#000" textStyle={styles.backText} style={styles.backButton} />
-
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false} bottomOffset={16} contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <View style={styles.avatarContainer}>
-            <User size={44} color="#FFFFFF" />
-          </View>
 
-          <Text style={styles.title}>Create a new account</Text>
-          <Text style={styles.subtitle}>It's quick and easy.</Text>
-        </View>
+        <AuthHeader
+          icon={<User size={44} color="#FFFFFF" />}
+          title="Create a new account"
+          subtitle="It's quick and easy."
+        />
 
         <View style={styles.formContainer}>
           <CustomInput
@@ -66,7 +59,7 @@ const Signup = ({ navigation }) => {
             onChangeText={(t) => updateForm('name', t)}
             error={errors.name}
           />
-          
+
           <Text style={styles.label}>Date Of Birth</Text>
           <View style={styles.row}>
             <View style={styles.flexItem}>
@@ -83,7 +76,7 @@ const Signup = ({ navigation }) => {
           </View>
 
           <Text style={styles.label}>Gender *</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.picker, errors.gender && styles.pickerError]}
             onPress={() => setShowGenderPicker(!showGenderPicker)}
           >
@@ -103,11 +96,12 @@ const Signup = ({ navigation }) => {
             </View>
           )}
 
-          <View style={{height: 10}} />
+          <View style={{ height: 10 }} />
 
           <CustomInput
             label="Email address or Phone number *"
             placeholder="Enter your email or Phone Number"
+            leftIcon={<Mail size={18} color={COLORS.textMuted} />}
             value={form.emailOrPhone}
             onChangeText={(t) => updateForm('emailOrPhone', t)}
             error={errors.email}
@@ -133,10 +127,7 @@ const Signup = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Image source={images.secuvestLogo} style={styles.logo} />
-          <Text style={styles.footerText}>SECUVEST</Text>
-        </View>
+        <AuthFooter />
 
       </KeyboardAwareScrollView>
     </SafeAreaView>
@@ -144,34 +135,7 @@ const Signup = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 16,
-    paddingLeft: 20,
-    zIndex: 10,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#000',
-    marginLeft: 6,
-  },
-  header: { alignItems: 'center', marginBottom: 20, paddingHorizontal: 20 },
-  avatarContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 22,
-    backgroundColor: '#4F46E5',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 24,
-  },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text, marginBottom: 5 },
-  subtitle: { fontSize: 16, color: COLORS.textSecondary },
-  formContainer: { marginTop: 10, paddingHorizontal: 20 },
+  formContainer: { marginTop: 4, paddingHorizontal: 20 },
   label: { marginBottom: 8, fontSize: 14, color: COLORS.text, fontWeight: '500' },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
   flexItem: { flex: 1 },

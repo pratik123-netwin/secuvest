@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/colors';
-import { Bell, AlarmClock, ChevronRight, User, CheckCircle } from 'lucide-react-native';
+import { AlarmClock, ChevronRight, User } from 'lucide-react-native';
 
 const HomeScreen = ({ navigation }) => {
   const { user } = useSelector((state) => state.auth);
@@ -30,64 +30,61 @@ const HomeScreen = ({ navigation }) => {
           }
         } catch (e) { }
       };
-
       checkActiveSession();
-      const interval = setInterval(checkActiveSession, 60000); // refresh every minute natively
+      const interval = setInterval(checkActiveSession, 60000);
       return () => clearInterval(interval);
     }, [])
   );
 
+  const isActive = !!activeSession;
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View style={styles.avatar}>
-              <User size={24} color="#555" />
-            </View>
-            <Text style={styles.greetingText}>Hi, {userName}!</Text>
+      {/* ── Top Header ── */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <View style={styles.avatar}>
+            <User size={22} color="#555" />
           </View>
+          <Text style={styles.greetingText}>Hi, {userName}!</Text>
+        </View>
+      </View>
+
+      {/* ── Vertically centred hero area ── */}
+      <View style={styles.heroArea}>
+
+        {/* Circular icon badge */}
+        <View style={[styles.iconBadge, isActive && styles.iconBadgeActive]}>
+          <AlarmClock size={44} color="#FFFFFF" strokeWidth={1.5} />
         </View>
 
-        {/* Action Card */}
-        {activeSession ? (
-          <TouchableOpacity
-            style={[styles.actionCard, { backgroundColor: '#0B5842', shadowColor: '#22784C' }]}
-            activeOpacity={0.9}
-            onPress={() => navigation.navigate('Clock', { screen: 'BreakManagement' })}
-          >
-            <View style={styles.actionIconContainer}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#22784C', justifyContent: 'center', alignItems: 'center' }}>
-                <AlarmClock size={24} color="#FFFFFF" strokeWidth={1.5} />
+        {/* Text block */}
+        <Text style={styles.heroTitle}>
+          {isActive ? 'Shift in Progress' : 'Start your Shift'}
+        </Text>
+        <Text style={styles.heroSubtitle}>
+          {isActive
+            ? `Running for ${elapsedText}`
+            : 'Tap the button below to clock in'}
+        </Text>
 
-              </View>
-            </View>
-            <View style={styles.actionTextContainer}>
-              <Text style={styles.actionTitle}>Shift Continue</Text>
-              <Text style={styles.actionSubtitle}>{elapsedText}</Text>
-            </View>
-            <ChevronRight size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.actionCard}
-            activeOpacity={0.9}
-            onPress={() => navigation.navigate('Clock', { screen: 'StoreSelection' })}
-          >
-            <View style={styles.actionIconContainer}>
-              <AlarmClock size={28} color="#FFFFFF" strokeWidth={1.5} />
-            </View>
-            <View style={styles.actionTextContainer}>
-              <Text style={styles.actionTitle}>Start your Shift</Text>
-              <Text style={styles.actionSubtitle}>Select a store to clock in</Text>
-            </View>
-            <ChevronRight size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
-
-      </ScrollView>
+        {/* CTA Button */}
+        <TouchableOpacity
+          style={[styles.ctaButton, isActive && styles.ctaButtonActive]}
+          activeOpacity={0.85}
+          onPress={() =>
+            navigation.navigate('Clock', {
+              screen: isActive ? 'BreakManagement' : 'StoreSelection',
+            })
+          }
+        >
+          <Text style={styles.ctaText}>
+            {isActive ? 'Continue Shift' : 'Start Shift'}
+          </Text>
+          <ChevronRight size={20} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -95,69 +92,103 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
-  scrollContent: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    minHeight: '100%',
-  },
+
+  /* Header */
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 35,
-    marginTop: 10,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 10,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
   },
   greetingText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
     marginLeft: 12,
   },
-  bellIcon: {
-    padding: 8,
+
+  /* Hero */
+  heroArea: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingBottom: 40,
   },
-  actionCard: {
-    backgroundColor: COLORS.primary, // Blue
-    borderRadius: 36,
-    padding: 14,
-    paddingVertical: 10,
+  iconBadge: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 28,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  iconBadgeActive: {
+    backgroundColor: '#0B5842',
+    shadowColor: '#0B5842',
+  },
+  heroTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  heroSubtitle: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 36,
+  },
+
+  /* Button */
+  ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    borderRadius: 999,
+    paddingVertical: 16,
+    paddingHorizontal: 40,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 5,
+    gap: 8,
   },
-  actionIconContainer: {
-    marginRight: 16,
+  ctaButtonActive: {
+    backgroundColor: '#0B5842',
+    shadowColor: '#0B5842',
   },
-  actionTextContainer: {
-    flex: 1,
-  },
-  actionTitle: {
+  ctaText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 2,
-  },
-  actionSubtitle: {
-    fontSize: 13,
-    color: '#E0E7FF',
+    letterSpacing: 0.3,
   },
 });
 

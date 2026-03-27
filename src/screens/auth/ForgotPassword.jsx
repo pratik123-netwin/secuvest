@@ -2,15 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { Lock, Mail } from 'lucide-react-native';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
+import AuthHeader, { AuthFooter } from '../../components/AuthHeader';
 import { validateEmailOrPhone } from '../../utils/validation';
 import { forgotPasswordAPI } from '../../services/authService';
 import { COLORS } from '../../constants/colors';
-import { Image } from 'react-native';
-import images from '../../constants/images';
-import { Lock } from 'lucide-react-native';
-import BackButton from '../../components/BackButton';
 
 const ForgotPassword = ({ route, navigation }) => {
   const initialEmailOrPhone = route.params?.emailOrPhone || '';
@@ -21,18 +19,14 @@ const ForgotPassword = ({ route, navigation }) => {
 
   const handleSend = async () => {
     const valError = validateEmailOrPhone(emailOrPhone);
-    if (valError) {
-      setError(valError);
-      return;
-    }
+    if (valError) { setError(valError); return; }
     setError('');
     setLoading(true);
-
     try {
       await forgotPasswordAPI(emailOrPhone);
       setSuccess(true);
-    } catch (err) {
-      setError('Failed to send reset instructions');
+    } catch {
+      setError('Failed to send reset instructions. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -40,110 +34,60 @@ const ForgotPassword = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
+        bottomOffset={16}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <AuthHeader
+          icon={<Lock size={40} color="#FFFFFF" />}
+          title="Reset your password"
+          subtitle={"Enter your email or phone number and we'll\nsend you a code to reset your password."}
+        />
 
-      <BackButton color="#000" textStyle={styles.backText} style={styles.backButton} />
-
-      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} bottomOffset={16} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-        <View style={styles.content}>
-          <View style={styles.avatarContainer}>
-            <Lock size={44} color="#FFFFFF" />
+        {success ? (
+          <View style={styles.form}>
+            <Text style={styles.successText}>Instructions sent! Check your inbox or SMS.</Text>
+            <CustomButton title="Back to Login" onPress={() => navigation.navigate('LoginStep1')} />
           </View>
-
-          <Text style={styles.title}>Forgot Password</Text>
-          <Text style={styles.subtitle}>Enter your email or phone to reset your password.</Text>
-
-          {success ? (
-            <View style={styles.successContainer}>
-              <Text style={styles.successText}>Instructions sent! Check your inbox or SMS.</Text>
-              <CustomButton
-                title="Back to Login"
-                onPress={() => navigation.navigate('LoginStep1')}
-              />
+        ) : (
+          <View style={styles.form}>
+            <CustomInput
+              label="Email address or Phone number *"
+              placeholder="Enter your email or Phone Number"
+              leftIcon={<Mail size={18} color={COLORS.textMuted} />}
+              value={emailOrPhone}
+              onChangeText={(text) => { setEmailOrPhone(text); setError(''); }}
+              error={error}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <CustomButton title="Send Verification Code" onPress={handleSend} loading={loading} />
+            <View style={styles.divider} />
+            <View style={styles.createAccountContainer}>
+              <Text style={styles.createAccountText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                <Text style={styles.createAccountLink}>Create new account</Text>
+              </TouchableOpacity>
             </View>
-          ) : (
-            <View style={styles.form}>
-              <CustomInput
-                label="Email address or Phone number *"
-                placeholder="Enter your email or phone number"
-                value={emailOrPhone}
-                onChangeText={(text) => {
-                  setEmailOrPhone(text);
-                  setError('');
-                }}
-                error={error}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
+          </View>
+        )}
 
-              <CustomButton
-                title="Send"
-                onPress={handleSend}
-                loading={loading}
-              />
-            </View>
-          )}
-        </View>
-
-        <View style={styles.footer}>
-          <Image source={images.secuvestLogo} style={styles.logo} />
-          <Text style={styles.footerText}>SECUVEST</Text>
-        </View>
+        <AuthFooter />
       </KeyboardAwareScrollView>
-
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 16,
-    paddingLeft: 20,
-    zIndex: 10,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#000',
-    marginLeft: 6,
-  },
-  content: { flex: 1, paddingHorizontal: 20 },
-  avatarContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 22,
-    backgroundColor: '#4F46E5',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 24,
-  },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text, textAlign: 'center', marginBottom: 10 },
-  subtitle: { fontSize: 16, color: COLORS.textSecondary, textAlign: 'center', marginBottom: 40 },
-  form: { marginTop: 10 },
-  successContainer: { marginTop: 20, alignItems: 'center' },
-  successText: { color: COLORS.success, fontSize: 16, marginBottom: 20, textAlign: 'center' },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-    marginTop: 'auto',
-  },
-  logo: {
-    width: 28,
-    height: 28,
-    resizeMode: 'contain',
-  },
-  footerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 1.5,
-    color: '#111',
-    marginLeft: 8,
-  },
+  form: { paddingHorizontal: 20, marginTop: 4 },
+  divider: { height: 1, backgroundColor: COLORS.border, marginTop: 20, marginBottom: 20 },
+  createAccountContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+  createAccountText: { color: COLORS.textMuted, fontSize: 14 },
+  createAccountLink: { color: COLORS.primary, fontSize: 14, fontWeight: '600' },
+  successText: { color: COLORS.success, fontSize: 15, marginBottom: 20, textAlign: 'center', lineHeight: 22 },
 });
 
 export default ForgotPassword;

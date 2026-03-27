@@ -129,13 +129,13 @@ const styles = StyleSheet.create({
   },
 
   timeCard: {
-    backgroundColor: '#EEF2FF',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: '#ECF1FF',
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#E0E7FF'
+    borderColor: '#C2CFFF'
   },
   timeLabel: {
     fontSize: 14,

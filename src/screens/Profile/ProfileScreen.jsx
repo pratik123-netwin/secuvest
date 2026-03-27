@@ -9,6 +9,8 @@ import {
 } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
 import ProfileInfoRow from '../../components/common/ProfileInfoRow';
+import { COLORS } from '../../constants/colors';
+import { STRINGS } from '../../constants/strings';
 import LinearGradient from 'react-native-linear-gradient';
 
 // Generate initials from a full name string
@@ -37,7 +39,7 @@ const ProfileScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <BackButton onPress={() => navigation.navigate('RootTabs', { screen: 'Home' })} />
-        <Text style={styles.headerTitle}>My Profile</Text>
+        <Text style={styles.headerTitle}>{STRINGS.myProfile}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -45,7 +47,7 @@ const ProfileScreen = ({ navigation }) => {
 
         {/* Dark Profile Card */}
         <LinearGradient
-          colors={['#2B2B2B', '#1F1F1F', '#141414']}
+          colors={[COLORS.darkCardGrad1, COLORS.darkCardGrad2, COLORS.darkCardGrad3]}
           locations={[0, 0.5, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -97,7 +99,7 @@ const ProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: COLORS.background },
 
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: COLORS.darkCard,
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
@@ -120,9 +122,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 30,
-    backgroundColor: '#374151',
+    backgroundColor: COLORS.darkAvatarBg,
     borderWidth: 2,
-    borderColor: '#4B5563',
+    borderColor: COLORS.darkAvatarBorder,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -137,12 +139,12 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#FFFFFF',
+    color: COLORS.textWhite,
     marginBottom: 4,
   },
   profileRole: {
     fontSize: 12,
-    color: '#FFFFFF',
+    color: COLORS.textWhite,
     fontWeight: '400',
   },
 
@@ -150,7 +152,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#111827',
+    color: COLORS.text,
     marginBottom: 14,
   },
 });

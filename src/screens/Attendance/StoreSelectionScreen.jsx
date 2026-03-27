@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getStores, getRetailers, getRegions } from '../../services/attendanceService';
 import { COLORS } from '../../constants/colors';
-import { Star, Building } from 'lucide-react-native';
+import { Star, Building2 } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
 import SearchBar from '../../components/SearchBar';
 import StoreCard from '../../components/StoreCard';
@@ -149,7 +149,7 @@ const StoreSelectionScreen = ({ navigation }) => {
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
                 <View style={styles.sectionHeaderLeft}>
-                  <Building size={16} color="#9CA3AF" />
+                  <Building2 size={16} color="#9CA3AF" />
                   <Text style={styles.sectionTitle}>Other Stores</Text>
                 </View>
                 <View style={styles.countBadge}>

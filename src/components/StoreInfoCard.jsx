@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Building } from 'lucide-react-native';
+import { Building2 } from 'lucide-react-native';
 
 const StoreInfoCard = ({ storeName, status, dateString, timeString, totalHours }) => {
   return (
@@ -11,7 +11,7 @@ const StoreInfoCard = ({ storeName, status, dateString, timeString, totalHours }
           <Text style={styles.storeName}>{storeName}</Text>
         </View>
         <View style={styles.buildingIconBox}>
-          <Building size={20} color="#FFFFFF" />
+          <Building2 size={20} color="#FFFFFF" />
         </View>
       </View>
 

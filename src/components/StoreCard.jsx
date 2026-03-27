@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Star, Building } from 'lucide-react-native';
+import { Star, Building2 } from 'lucide-react-native';
 
 const StoreCard = ({ store, isFavorite, onToggleFavorite, onPress }) => {
   return (
@@ -11,7 +11,7 @@ const StoreCard = ({ store, isFavorite, onToggleFavorite, onPress }) => {
     >
       <View style={styles.cardTopRow}>
         <View style={[styles.iconBox, isFavorite && styles.iconBoxFav]}>
-          <Building size={20} color={isFavorite ? "#F59E0B" : "#9CA3AF"} />
+          <Building2 size={20} color={isFavorite ? "#F59E0B" : "#9CA3AF"} />
         </View>
         <View style={styles.storeTextCol}>
           <Text style={styles.storeName}>{store.name}</Text>

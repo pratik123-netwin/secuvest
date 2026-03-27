@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { clockIn } from '../../services/attendanceService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/colors';
-import { LogIn, Building, Clock as ClockIcon } from 'lucide-react-native';
+import { LogIn, Building2, Clock as ClockIcon } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
 
 const ConfirmClockInScreen = ({ route, navigation }) => {
@@ -60,7 +60,7 @@ const ConfirmClockInScreen = ({ route, navigation }) => {
               <Text style={styles.storeName}>{store.name}</Text>
             </View>
             <View style={styles.buildingIconBox}>
-              <Building size={20} color="#FFFFFF" />
+              <Building2 size={20} color="#FFFFFF" />
             </View>
           </View>
 

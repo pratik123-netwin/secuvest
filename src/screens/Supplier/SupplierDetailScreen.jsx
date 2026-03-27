@@ -8,6 +8,7 @@ import BackButton from '../../components/BackButton';
 import TabBar from '../../components/common/TabBar';
 import SupplierOverviewTab from './SupplierOverviewTab';
 import SupplierProductsTab from './SupplierProductsTab';
+import LinearGradient from 'react-native-linear-gradient';
 
 const TABS = ['Overview', 'Products'];
 
@@ -29,7 +30,13 @@ const SupplierDetailScreen = ({ route, navigation }) => {
       </View>
 
       {/* Blue mini summary card */}
-      <View style={styles.summaryCard}>
+      <LinearGradient
+        colors={['#3075DF', '#1447E6']}
+        locations={[0.04, 0.969]} // 4% and 96.9%
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0.4 }}
+        style={styles.summaryCard}
+      >
         <View style={styles.summaryIconBox}>
           <Building2 size={22} color="#FFFFFF" strokeWidth={1.5} />
         </View>
@@ -37,7 +44,7 @@ const SupplierDetailScreen = ({ route, navigation }) => {
           <Text style={styles.summaryTitle}>{supplier.name || 'Supplier'}</Text>
           <Text style={styles.summarySubtitle}>{supplier.location || ''}</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Overview / Products Tab Bar */}
       <TabBar tabs={TABS} activeTab={activeTab} onTabPress={setActiveTab} />

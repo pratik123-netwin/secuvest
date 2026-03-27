@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   metaLabel: { fontSize: 13, color: '#6B7280' },
   metaValue: { fontSize: 13, fontWeight: '600', color: '#111827' },
   progressTrack: { height: 6, backgroundColor: '#E5E7EB', borderRadius: 3, marginBottom: 14, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#4F46E5', borderRadius: 3 },
+  progressFill: { height: '100%', backgroundColor: '#4238F3', borderRadius: 3 },
   rdRow: { flexDirection: 'row', gap: 10 },
   rdCard: {
     flex: 1, borderRadius: 12, padding: 12, borderWidth: 1,

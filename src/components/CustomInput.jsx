@@ -7,6 +7,7 @@ const CustomInput = ({
   label,
   error,
   password,
+  leftIcon,
   ...props
 }) => {
   const [hidePassword, setHidePassword] = useState(password);
@@ -19,6 +20,12 @@ const CustomInput = ({
         styles.inputContainer,
         { borderColor: error ? COLORS.error : isFocused ? COLORS.primary : COLORS.border }
       ]}>
+        {leftIcon && (
+          <View style={styles.leftIconWrap}>
+            {leftIcon}
+
+          </View>
+        )}
         <TextInput
           style={styles.input}
           secureTextEntry={hidePassword}
@@ -66,6 +73,17 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     flex: 1,
     fontSize: 14,
+  },
+  leftIconWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  leftIconDivider: {
+    width: 1,
+    height: 18,
+    backgroundColor: COLORS.border,
+    marginLeft: 10,
   },
   icon: {
     marginLeft: 10,

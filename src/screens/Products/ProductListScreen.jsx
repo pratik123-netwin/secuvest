@@ -12,6 +12,8 @@ import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import Checkbox from '../../components/common/Checkbox';
 import { getProducts, getCategories, getSupplierNames } from '../../services/productService';
+import { COLORS } from '../../constants/colors';
+import { STRINGS } from '../../constants/strings';
 
 const ProductListScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
@@ -104,7 +106,7 @@ const ProductListScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <BackButton onPress={() => navigation.navigate('RootTabs', { screen: 'Home' })} />
-        <Text style={styles.headerTitle}>Products</Text>
+        <Text style={styles.headerTitle}>{STRINGS.products}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -112,18 +114,18 @@ const ProductListScreen = ({ navigation }) => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onFilterPress={() => setFilterVisible(true)}
-        placeholder="Search products, Article#..."
-        resultsText={loading ? undefined : `${filtered.length} products available`}
+        placeholder={STRINGS.searchProducts}
+        resultsText={loading ? undefined : `${filtered.length} ${STRINGS.productsAvailable}`}
       />
 
       <View style={styles.toggleRow}>
         <Text style={[styles.toggleLabel, isMultiSelect && styles.toggleLabelActive]}>
-          Multi-Products Select
+          {STRINGS.multiProductsSelect}
         </Text>
         <Switch
           value={isMultiSelect}
           onValueChange={toggleMultiSelect}
-          trackColor={{ false: '#E5E7EB', true: '#4F46E5' }}
+          trackColor={{ false: COLORS.border, true: COLORS.primary }}
           thumbColor="#FFFFFF"
           ios_backgroundColor="#E5E7EB"
         />
@@ -146,7 +148,7 @@ const ProductListScreen = ({ navigation }) => {
 
       <FloatingActionButton
         isVisible={isMultiSelect && selectedIds.length > 0}
-        text={`${selectedIds.length} Products Selected`}
+        text={`${selectedIds.length} ${STRINGS.productsSelected}`}
         onPress={() => { }}
       />
 
@@ -164,10 +166,10 @@ const ProductListScreen = ({ navigation }) => {
         favoritesOnly={false}
         setFavoritesOnly={() => { }}
         showFavorites={false}
-        retailerLabel="Categories"
-        regionLabel="Suppliers"
-        retailerPlaceholder="All Categories"
-        regionPlaceholder="All Suppliers"
+        retailerLabel={STRINGS.categories}
+        regionLabel={STRINGS.suppliers}
+        retailerPlaceholder={STRINGS.allCategories}
+        regionPlaceholder={STRINGS.allSuppliers}
         onApply={() => setFilterVisible(false)}
       />
     </SafeAreaView>
@@ -175,20 +177,20 @@ const ProductListScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: COLORS.background },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 10, paddingBottom: 15,
   },
-  headerTitle: { fontSize: 16, fontWeight: '500', color: '#181D27' },
+  headerTitle: { fontSize: 16, fontWeight: '500', color: COLORS.textPrimary },
   toggleRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginHorizontal: 20, marginBottom: 16, backgroundColor: '#FAFAFA',
+    marginHorizontal: 20, marginBottom: 16, backgroundColor: COLORS.surfaceAlt,
     paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12,
-    borderColor: '#EAEAED', borderWidth: 1,
+    borderColor: COLORS.cardBorder, borderWidth: 1,
   },
-  toggleLabel: { fontSize: 14, fontWeight: '500', color: '#6B7280' },
-  toggleLabelActive: { color: '#4F46E5', fontWeight: '600' },
+  toggleLabel: { fontSize: 14, fontWeight: '500', color: COLORS.textMuted },
+  toggleLabelActive: { color: COLORS.primary, fontWeight: '600' },
   listContent: { paddingHorizontal: 20, paddingBottom: 100 },
   multiSelectCardRow: {
     flexDirection: 'row',

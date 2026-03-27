@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Building, Star, ChevronRight } from 'lucide-react-native';
+import { Building2, Star, ChevronRight } from 'lucide-react-native';
 import { COLORS } from '../../constants/colors';
 import Checkbox from './Checkbox';
 
@@ -66,7 +66,7 @@ const SupplierCard = ({
       <View style={topRowStyle}>
         <View style={styles.topLeft}>
           <View style={iconBoxStyle}>
-            <Building size={20} color={iconColor} strokeWidth={1.5} />
+            <Building2 size={20} color={iconColor} strokeWidth={1.5} />
           </View>
           <View style={styles.titleBlock}>
             <Text style={styles.nameText} numberOfLines={1}>{name}</Text>

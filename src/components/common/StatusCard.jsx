@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CheckCircle2, XCircle, Layers, AlertTriangle } from 'lucide-react-native';
+import { COLORS } from '../../constants/colors';
 
 /**
  * StatusCard — Reusable colored summary card matching the MetricsDrilldown style.
@@ -29,9 +30,9 @@ const inferVariant = (value = '', type = 'stock') => {
 };
 
 const VARIANTS = {
-  green: { bg: '#F0FDF4', border: '#BBF7D0', color: '#099250' },
-  amber: { bg: '#FFFBEB', border: '#FDE68A', color: '#D97706' },
-  red: { bg: '#FEF2F2', border: '#FECACA', color: '#DC2626' },
+  green: { bg: COLORS.stockGreenBg, border: COLORS.stockGreenBorder, color: COLORS.stockGreen },
+  amber: { bg: COLORS.stockAmberBg, border: COLORS.stockAmberBorder, color: COLORS.stockAmber },
+  red:   { bg: COLORS.stockRedBg,   border: COLORS.stockRedBorder,   color: COLORS.stockRed },
 };
 
 const StatusCard = ({ label, value, type = 'stock', variant }) => {

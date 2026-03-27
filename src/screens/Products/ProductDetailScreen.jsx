@@ -8,12 +8,12 @@ import BackButton from '../../components/BackButton';
 import TabBar from '../../components/common/TabBar';
 import { getProductById } from '../../services/productService';
 import { COLORS } from '../../constants/colors';
-
+import { STRINGS } from '../../constants/strings';
 import ProductOverviewTab from './ProductOverviewTab';
 import ProductStockTab from './ProductStockTab';
 import ProductDetailsTab from './ProductDetailsTab';
 
-const TABS = ['Overview', 'Stock', 'Details'];
+const TABS = [STRINGS.tabOverview, STRINGS.tabStock, STRINGS.tabDetails];
 
 const ProductDetailScreen = ({ route, navigation }) => {
   const { productId } = route.params;
@@ -45,13 +45,13 @@ const ProductDetailScreen = ({ route, navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <BackButton />
-        <Text style={styles.headerTitle}>Product Details</Text>
+        <Text style={styles.headerTitle}>{STRINGS.productDetails}</Text>
         <View style={{ width: 60 }} />
       </View>
 
       {/* Gradient Green Summary Card */}
       <LinearGradient
-        colors={['#247A4D', '#065240']}
+        colors={[COLORS.productGradStart, COLORS.productGradEnd]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.greenCard}
@@ -85,7 +85,7 @@ const ProductDetailScreen = ({ route, navigation }) => {
           <Text style={styles.supplierPillText}>
             {product.supplierName}
           </Text>
-          <ExternalLink size={16} color="#FFFFFF" />
+          <ExternalLink size={16} color={COLORS.textWhite} />
         </TouchableOpacity>
       </LinearGradient>
 
@@ -103,7 +103,7 @@ const ProductDetailScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: COLORS.background },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   header: {
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#181D27',
+    color: COLORS.textPrimary,
   },
 
   // Gradient Card
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   greenName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#FFFFFF',
+    color: COLORS.textWhite,
     marginBottom: 4,
   },
 
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   supplierPillText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#FFFFFF',
+    color: COLORS.textWhite,
   },
 });
 

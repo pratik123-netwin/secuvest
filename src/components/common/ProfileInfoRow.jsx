@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { COLORS } from '../../constants/colors';
 
 /**
  * ProfileInfoRow — Reusable contact info row with icon, label, and value.
@@ -23,10 +24,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#EAEAED',
+    borderColor: COLORS.cardBorder,
     paddingHorizontal: 12,
     paddingVertical: 14,
     marginBottom: 10,
@@ -40,18 +41,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 14,
     borderWidth: 1,
-    borderColor: '#EAEAED',
+    borderColor: COLORS.cardBorder,
   },
   textBlock: { flex: 1 },
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#181D27',
+    color: COLORS.textPrimary,
     marginBottom: 2,
   },
   value: {
     fontSize: 12,
-    color: '#535862',
+    color: COLORS.textSecondary,
     fontWeight: '400',
   },
 });

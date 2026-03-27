@@ -4,8 +4,9 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getStoreDetails } from '../../services/attendanceService';
 import { COLORS } from '../../constants/colors';
-import { MapPin, Building, Clock as ClockIcon, Calendar, ChevronRight, ChevronLeft } from 'lucide-react-native';
+import { MapPin, Building2, Clock as ClockIcon, Calendar, ChevronRight, ChevronLeft } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
+import LinearGradient from 'react-native-linear-gradient';
 
 const StoreActionOptionsScreen = ({ route, navigation }) => {
   const { storeId, status } = route.params;
@@ -57,13 +58,20 @@ const StoreActionOptionsScreen = ({ route, navigation }) => {
       <ScrollView contentContainerStyle={styles.contentScroll} showsVerticalScrollIndicator={false}>
 
         {/* Selected Store Blue Card */}
-        <View style={styles.blueCard}>
+        <LinearGradient
+          colors={['#0F3078', '#155DFC']}
+          locations={[0.0859, 0.858]} // matches 8.59% and 85.8%
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0.6 }}
+          style={styles.blueCard}
+        >
+
           <View style={styles.blueCardTop}>
             <View style={{ flex: 1 }}>
               <Text style={styles.selectedStoreLabel}>Selected Store</Text>
               <Text style={styles.storeNameWhite}>{store.name}</Text>
             </View>
-            <Building size={20} color="#FFFFFF" opacity={0.9} />
+            <Building2 size={20} color="#FFFFFF" />
           </View>
 
           <View style={styles.blueCardBottom}>
@@ -73,7 +81,7 @@ const StoreActionOptionsScreen = ({ route, navigation }) => {
             </View>
             <Text style={styles.statusDisplayValue}>{statusDisplay}</Text>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Action 1: Clock In */}
         <TouchableOpacity

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StackActions } from '@react-navigation/native';
+import { StackActions, CommonActions } from '@react-navigation/native';
 import { CheckCircle, Home } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
 import StoreInfoCard from '../../components/StoreInfoCard';
@@ -57,11 +57,16 @@ const ClockOutSuccessScreen = ({ route, navigation }) => {
             activeOpacity={0.8}
             style={styles.homeBtn}
             onPress={() => {
-              // 1. Reset the Attendance stack to StoreSelection (same frame, no flash)
-              navigation.dispatch(StackActions.popToTop());
-              // 2. Directly tell the BottomTabNavigator (our parent) to switch to Home
-              //    Using getParent() bypasses the Drawer and actually changes the active tab
-              navigation.getParent()?.navigate('Home');
+              // Reset the Clock stack back to its first screen so it's clean on re-entry
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'StoreSelection' }],
+                })
+              );
+              // Then switch the BottomTab to Home
+              navigation.getParent('BottomTabs')?.navigate('Home')
+                ?? navigation.getParent()?.navigate('Home');
             }}
           >
             <Home size={16} color="#4B5563" style={{ marginRight: 8 }} />
