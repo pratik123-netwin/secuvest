@@ -12,7 +12,7 @@ import { getSupplierProducts } from '../../services/supplierService';
  * SupplierProductsTab — used inside SupplierDetailScreen.
  * Shows a searchable, filterable product list for one specific supplier.
  */
-const SupplierProductsTab = ({ supplierId }) => {
+const SupplierProductsTab = ({ supplierId, navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,30 +20,35 @@ const SupplierProductsTab = ({ supplierId }) => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [sortAZ, setSortAZ] = useState(false);
 
-  const loadProducts = useCallback(async () => {
+  const fetchSupplierProducts = async (query = '') => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getSupplierProducts(supplierId);
-      setProducts(data);
+      console.log(supplierId)
+      const data = await getSupplierProducts(supplierId, { search: query });
+      const items = Array.isArray(data) ? data : (data?.rows || []);
+      setProducts(items);
     } catch {
       setError('Failed to load products.');
     } finally {
       setLoading(false);
     }
-  }, [supplierId]);
+  };
 
-  useEffect(() => { loadProducts(); }, [loadProducts]);
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchSupplierProducts(searchQuery);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, supplierId]);
 
-  const filteredProducts = products
-    .filter(p =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.articleNo.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => sortAZ ? a.name.localeCompare(b.name) : 0);
+  const filteredProducts = [...products].sort((a, b) => {
+    if (!sortAZ) return 0;
+    return (a?.name || '').localeCompare(b?.name || '');
+  });
 
-  if (loading) return <LoadingSkeleton count={4} cardHeight={90} />;
-  if (error) return <ErrorState message={error} onRetry={loadProducts} />;
+  if (loading && products.length === 0) return <LoadingSkeleton count={4} cardHeight={90} />;
+  if (error) return <ErrorState message={error} onRetry={() => fetchSupplierProducts(searchQuery)} />;
 
   return (
     <>
@@ -60,7 +65,18 @@ const SupplierProductsTab = ({ supplierId }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20 }}
         ListEmptyComponent={<EmptyState title="No products found" />}
-        renderItem={({ item }) => <ProductCard product={item} showStatus={false} />}
+        renderItem={({ item }) => (
+          <ProductCard
+            product={item}
+            showStatus={false}
+            onPress={() =>
+              navigation.navigate('ProductsFlow', {
+                screen: 'ProductDetail',
+                params: { productId: item.id },
+              })
+            }
+          />
+        )}
       />
 
       {/* Filter modal — no Favourites option for products */}
@@ -70,13 +86,13 @@ const SupplierProductsTab = ({ supplierId }) => {
         retailers={[]}
         regions={[]}
         selectedRetailer=""
-        setSelectedRetailer={() => {}}
+        setSelectedRetailer={() => { }}
         selectedRegion=""
-        setSelectedRegion={() => {}}
+        setSelectedRegion={() => { }}
         sortAZ={sortAZ}
         setSortAZ={setSortAZ}
         favoritesOnly={false}
-        setFavoritesOnly={() => {}}
+        setFavoritesOnly={() => { }}
         showFavorites={false}
         retailerLabel="Store Banner"
         retailerPlaceholder="All Banners"

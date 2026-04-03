@@ -11,11 +11,25 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('token');
+  const token = await AsyncStorage.getItem('authToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 }, (error) => Promise.reject(error));
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear token on Unauthorized
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('user');
+      // The authSlice dispatch will be handled either by the navigation wrapper
+      // or by the components when api call fails.
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

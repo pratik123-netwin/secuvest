@@ -23,7 +23,7 @@ const inferVariant = (value = '', type = 'stock') => {
     return 'green';  // "in stock"
   }
   if (type === 'range') {
-    if (v.includes('de-rang') || v.includes('derang')) return 'red';
+    if (v.includes('de-rang') || v.includes('derang') || v.includes('de_ranged')) return 'red';
     return 'green';  // "on range" / "ranged"
   }
   return 'green';
@@ -32,7 +32,7 @@ const inferVariant = (value = '', type = 'stock') => {
 const VARIANTS = {
   green: { bg: COLORS.stockGreenBg, border: COLORS.stockGreenBorder, color: COLORS.stockGreen },
   amber: { bg: COLORS.stockAmberBg, border: COLORS.stockAmberBorder, color: COLORS.stockAmber },
-  red:   { bg: COLORS.stockRedBg,   border: COLORS.stockRedBorder,   color: COLORS.stockRed },
+  red: { bg: COLORS.stockRedBg, border: COLORS.stockRedBorder, color: COLORS.stockRed },
 };
 
 const StatusCard = ({ label, value, type = 'stock', variant }) => {

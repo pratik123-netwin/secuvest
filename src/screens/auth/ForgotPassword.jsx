@@ -24,11 +24,11 @@ const ForgotPassword = ({ route, navigation }) => {
     setLoading(true);
     try {
       await forgotPasswordAPI(emailOrPhone);
-      setSuccess(true);
-    } catch {
-      setError('Failed to send reset instructions. Please try again.');
-    } finally {
       setLoading(false);
+      navigation.navigate('OTPVerification', { emailOrPhone, flow: 'forgotPassword' });
+    } catch (err) {
+      setLoading(false);
+      setError(err);
     }
   };
 
@@ -46,33 +46,26 @@ const ForgotPassword = ({ route, navigation }) => {
           subtitle={"Enter your email or phone number and we'll\nsend you a code to reset your password."}
         />
 
-        {success ? (
-          <View style={styles.form}>
-            <Text style={styles.successText}>Instructions sent! Check your inbox or SMS.</Text>
-            <CustomButton title="Back to Login" onPress={() => navigation.navigate('LoginStep1')} />
+        <View style={styles.form}>
+          <CustomInput
+            label="Email address or Phone number *"
+            placeholder="Enter your email or Phone Number"
+            leftIcon={<Mail size={18} color={COLORS.textMuted} />}
+            value={emailOrPhone}
+            onChangeText={(text) => { setEmailOrPhone(text); setError(''); }}
+            error={error}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+          <CustomButton title="Send Verification Code" onPress={handleSend} loading={loading} />
+          <View style={styles.divider} />
+          <View style={styles.createAccountContainer}>
+            <Text style={styles.createAccountText}>Don't have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+              <Text style={styles.createAccountLink}>Create new account</Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.form}>
-            <CustomInput
-              label="Email address or Phone number *"
-              placeholder="Enter your email or Phone Number"
-              leftIcon={<Mail size={18} color={COLORS.textMuted} />}
-              value={emailOrPhone}
-              onChangeText={(text) => { setEmailOrPhone(text); setError(''); }}
-              error={error}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-            <CustomButton title="Send Verification Code" onPress={handleSend} loading={loading} />
-            <View style={styles.divider} />
-            <View style={styles.createAccountContainer}>
-              <Text style={styles.createAccountText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                <Text style={styles.createAccountLink}>Create new account</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+        </View>
 
         <AuthFooter />
       </KeyboardAwareScrollView>

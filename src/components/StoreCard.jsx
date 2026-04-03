@@ -15,7 +15,7 @@ const StoreCard = ({ store, isFavorite, onToggleFavorite, onPress }) => {
         </View>
         <View style={styles.storeTextCol}>
           <Text style={styles.storeName}>{store.name}</Text>
-          <Text style={styles.retailerName}>{store.retailer}</Text>
+          <Text style={styles.retailerName}>{store.address}</Text>
         </View>
         <TouchableOpacity onPress={onToggleFavorite} style={styles.actionIcon}>
           <Star size={20} color={isFavorite ? "#F59E0B" : "#9CA3AF"} fill={isFavorite ? "#F59E0B" : "transparent"} />
@@ -24,9 +24,9 @@ const StoreCard = ({ store, isFavorite, onToggleFavorite, onPress }) => {
       <View style={styles.divider} />
       <View style={styles.cardBottomRow}>
         <View style={styles.tagBadge}>
-          <Text style={styles.tagText}>{store.tags && store.tags[0]}</Text>
+          <Text style={styles.tagText}>{store.retailer_name}</Text>
         </View>
-        <Text style={styles.distanceText}>{store.distance}</Text>
+        <Text style={styles.distanceText}>{store.geofence_radius}Km</Text>
       </View>
     </TouchableOpacity>
   );

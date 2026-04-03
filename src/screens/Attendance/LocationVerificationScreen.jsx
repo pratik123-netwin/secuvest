@@ -71,15 +71,21 @@ const LocationVerificationScreen = ({ route, navigation }) => {
       Geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          const distanceKm = getDistanceFromLatLonInKm(latitude, longitude, store.lat, store.lng);
-          const distanceMeters = distanceKm * 1000;
-
+          let distanceMeters = 500;
           let status = 'Away';
-          if (distanceMeters <= 500) {
-            status = 'On-site';
+          try {
+            const distanceKm = getDistanceFromLatLonInKm(latitude, longitude, store.latitude, store.longitude);
+            distanceMeters = distanceKm * 1000;
+            const geofence = store.geofence_radius || 500; // Provide fallback strictly if DB missing it
+
+            if (distanceMeters <= geofence) {
+              status = 'On-site';
+            }
+            // await logLocationCheck(storeId, latitude, longitude, distanceMeters, status === 'On-site' ? 'success' : 'failed');
+            navigation.replace('StoreActionOptions', { storeId, status });
+          } catch (err) {
+            setErrorMsg(typeof err === 'string' ? err : 'Error saving location check');
           }
-          await logLocationCheck(storeId, { latitude, longitude }, status);
-          navigation.replace('StoreActionOptions', { storeId, status });
         },
         (error) => {
           console.log(error.code, error.message);
@@ -90,7 +96,8 @@ const LocationVerificationScreen = ({ route, navigation }) => {
 
     } catch (error) {
       console.log('-------> err', error)
-      setErrorMsg('An unexpected error occurred while verifying location. Please try again.');
+      const errSafe = typeof error === 'string' ? error : 'An unexpected error occurred while verifying location.';
+      setErrorMsg(errSafe);
     }
   };
 

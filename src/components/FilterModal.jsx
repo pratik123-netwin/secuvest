@@ -32,6 +32,15 @@ const FilterModal = ({
     setDropdownOpen(openDropdown === name ? null : name);
   };
 
+  const getOptId = (opt) => (opt && typeof opt === 'object' ? opt.id : opt);
+  const getOptName = (opt) => (opt && typeof opt === 'object' ? opt.name : opt);
+
+  const getSelectedLabel = (options, value, placeholder) => {
+    if (!value) return placeholder;
+    const selectedOpt = options.find(opt => getOptId(opt) === value);
+    return selectedOpt ? getOptName(selectedOpt) : placeholder;
+  };
+
   const renderDropdownList = (options, selectedValue, onSelect) => (
     <View style={styles.dropdownMenu}>
       <TouchableOpacity 
@@ -43,18 +52,22 @@ const FilterModal = ({
         </Text>
         {!selectedValue && <Check size={16} color={COLORS.primary} />}
       </TouchableOpacity>
-      {options.map(opt => (
-        <TouchableOpacity 
-          key={opt}
-          style={styles.dropdownMenuItem} 
-          onPress={() => { onSelect(opt); setDropdownOpen(null); }}
-        >
-          <Text style={[styles.dropdownMenuItemText, selectedValue === opt && styles.dropdownMenuItemTextActive]}>
-            {opt}
-          </Text>
-          {selectedValue === opt && <Check size={16} color={COLORS.primary} />}
-        </TouchableOpacity>
-      ))}
+      {options.map(opt => {
+        const id = getOptId(opt);
+        const name = getOptName(opt);
+        return (
+          <TouchableOpacity 
+            key={id || name}
+            style={styles.dropdownMenuItem} 
+            onPress={() => { onSelect(id); setDropdownOpen(null); }}
+          >
+            <Text style={[styles.dropdownMenuItemText, selectedValue === id && styles.dropdownMenuItemTextActive]}>
+              {name}
+            </Text>
+            {selectedValue === id && <Check size={16} color={COLORS.primary} />}
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 
@@ -82,7 +95,7 @@ const FilterModal = ({
                   onPress={() => toggleDropdown('retailer')}
                 >
                   <Text style={[styles.dropdownText, selectedRetailer && styles.dropdownTextSelected]}>
-                    {selectedRetailer || retPlaceholder}
+                    {getSelectedLabel(retailers, selectedRetailer, retPlaceholder)}
                   </Text>
                   <ChevronDown size={18} color="#9CA3AF" />
                 </TouchableOpacity>
@@ -96,7 +109,7 @@ const FilterModal = ({
                   onPress={() => toggleDropdown('region')}
                 >
                   <Text style={[styles.dropdownText, selectedRegion && styles.dropdownTextSelected]}>
-                    {selectedRegion || regPlaceholder}
+                    {getSelectedLabel(regions, selectedRegion, regPlaceholder)}
                   </Text>
                   <ChevronDown size={18} color="#9CA3AF" />
                 </TouchableOpacity>

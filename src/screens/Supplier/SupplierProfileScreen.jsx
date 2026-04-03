@@ -14,7 +14,7 @@ import ProductCard from '../../components/common/ProductCard';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import { getSupplierProducts } from '../../services/supplierService';
+import { getCombinedProducts } from '../../services/supplierService';
 
 const TABS = ['Suppliers', 'Products'];
 
@@ -43,35 +43,40 @@ const SupplierProfileScreen = ({ route, navigation }) => {
   const extraCount = chips.length - 2;
   const previewText = chipNames.join(', ') + (extraCount > 0 ? '...' : '');
 
-  const loadProducts = useCallback(async () => {
+  const fetchCombinedProducts = async (idsString, query) => {
     try {
       setProductsLoading(true);
       setProductsError(null);
-      // Fetch products for the first supplier (extend for all in real API)
-      const data = await getSupplierProducts(primarySupplier.id);
-      setProducts(data);
+      const data = await getCombinedProducts(idsString, { search: query });
+      const items = Array.isArray(data) ? data : (data?.rows || []);
+      setProducts(items);
     } catch {
       setProductsError('Failed to load products.');
     } finally {
       setProductsLoading(false);
     }
-  }, [primarySupplier.id]);
+  };
 
   useEffect(() => {
-    if (activeTab === 'Products') loadProducts();
-  }, [activeTab, loadProducts]);
+    if (activeTab === 'Products' && chips.length > 0) {
+      const delayDebounceFn = setTimeout(() => {
+        const idsString = chips.map(c => c.id).join(',');
+        fetchCombinedProducts(idsString, searchQuery);
+      }, 500);
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [activeTab, chips, searchQuery]);
 
   const removeChip = (id) => setChips(prev => prev.filter(s => s.id !== id));
 
-  const filteredProducts = products
-    .filter(p =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.articleNo.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => sortAZ ? a.name.localeCompare(b.name) : 0);
+  // The backend API strictly handles filtering via searchQuery, only sort AZ locally.
+  const filteredProducts = [...products].sort((a, b) => {
+    if (!sortAZ) return 0;
+    return (a?.name || '').localeCompare(b?.name || '');
+  });
 
   const filteredSuppliers = chips.filter(s =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (s?.name || '').toLowerCase().includes((searchQuery || '').toLowerCase())
   );
 
   // Edit → go back to SelectSupplierScreen with current suppliers pre-selected
@@ -172,7 +177,7 @@ const SupplierProfileScreen = ({ route, navigation }) => {
         productsLoading ? (
           <LoadingSkeleton count={4} cardHeight={90} />
         ) : productsError ? (
-          <ErrorState message={productsError} onRetry={loadProducts} />
+          <ErrorState message={productsError} onRetry={filteredProducts} />
         ) : (
           <FlatList
             data={filteredProducts}
@@ -180,7 +185,12 @@ const SupplierProfileScreen = ({ route, navigation }) => {
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={<EmptyState title="No products found" message="Try a different search." />}
-            renderItem={({ item }) => <ProductCard product={item} showStatus={false} />}
+            renderItem={({ item }) => <ProductCard product={item} showStatus={false} onPress={() =>
+              navigation.navigate('ProductsFlow', {
+                screen: 'ProductDetail',
+                params: { productId: item.id },
+              })
+            } />}
           />
         )
       )}
@@ -192,13 +202,13 @@ const SupplierProfileScreen = ({ route, navigation }) => {
         retailers={[]}
         regions={[]}
         selectedRetailer=""
-        setSelectedRetailer={() => {}}
+        setSelectedRetailer={() => { }}
         selectedRegion=""
-        setSelectedRegion={() => {}}
+        setSelectedRegion={() => { }}
         sortAZ={sortAZ}
         setSortAZ={setSortAZ}
         favoritesOnly={false}
-        setFavoritesOnly={() => {}}
+        setFavoritesOnly={() => { }}
         showFavorites={activeTab === 'Suppliers'}
         retailerLabel="Store Banner"
         retailerPlaceholder="All Banners"

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { clockIn } from '../../services/attendanceService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Geolocation from 'react-native-geolocation-service';
 import { COLORS } from '../../constants/colors';
 import { LogIn, Building2, Clock as ClockIcon } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
@@ -15,18 +16,37 @@ const ConfirmClockInScreen = ({ route, navigation }) => {
   const handleConfirm = async () => {
     setLoading(true);
     setError('');
-    try {
-      await clockIn({ storeId: store.id, status });
-      await AsyncStorage.setItem('active_session', JSON.stringify({ store, status, startTime: Date.now() }));
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'ActiveSession', params: { store, status } }],
-      });
-    } catch (err) {
-      setError('Failed to clock in securely. Please try reconnecting.');
-    } finally {
-      setLoading(false);
-    }
+    
+    Geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const clockInType = status === 'On-site' ? 'on_site' : 'offline_visit';
+          
+          const sessionData = await clockIn(store.id, latitude, longitude, clockInType);
+          
+          await AsyncStorage.setItem('active_session', JSON.stringify({ 
+            session_id: sessionData.id || sessionData.session_id, 
+            store, 
+            status, 
+            startTime: sessionData.clock_in_time 
+          }));
+          
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'ActiveSession', params: { store, status } }],
+          });
+        } catch (err) {
+          setError(typeof err === 'string' ? err : 'Failed to clock in securely. Please try reconnecting.');
+          setLoading(false);
+        }
+      },
+      (geoError) => {
+        setError('Location unavailable. Check permissions.');
+        setLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
   };
 
   const today = new Date();

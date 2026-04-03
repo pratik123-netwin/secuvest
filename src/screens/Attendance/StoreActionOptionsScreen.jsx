@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getStoreDetails } from '../../services/attendanceService';
+import { getStoreDetails, getActiveSession } from '../../services/attendanceService';
 import { COLORS } from '../../constants/colors';
 import { MapPin, Building2, Clock as ClockIcon, Calendar, ChevronRight, ChevronLeft } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
@@ -12,6 +12,8 @@ const StoreActionOptionsScreen = ({ route, navigation }) => {
   const { storeId, status } = route.params;
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
+  const [activeSessionInfo, setActiveSessionInfo] = useState(null);
 
   const isOnSite = status === 'On-site';
 
@@ -23,8 +25,18 @@ const StoreActionOptionsScreen = ({ route, navigation }) => {
 
   const loadStore = async () => {
     try {
-      const data = await getStoreDetails(storeId);
-      setStore(data);
+      const [fetchedStore, session] = await Promise.all([
+        getStoreDetails(storeId),
+        getActiveSession()
+      ]);
+      setStore(fetchedStore);
+      if (session) {
+        setHasActiveSession(true);
+        setActiveSessionInfo(session);
+      } else {
+        setHasActiveSession(false);
+        setActiveSessionInfo(null);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -83,25 +95,44 @@ const StoreActionOptionsScreen = ({ route, navigation }) => {
           </View>
         </LinearGradient>
 
-        {/* Action 1: Clock In */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={[styles.actionCard, { backgroundColor: actionCardBg, borderColor: actionCardBorder }]}
-          onPress={() => navigation.navigate('ConfirmClockIn', { store, status })}
-        >
-          <View style={styles.actionLeft}>
-            <View style={[styles.actionIconBox, { backgroundColor: actionIconBg }]}>
-              <ClockIcon size={20} color={actionIconColor} />
+        {/* Action 1: Clock In / Return to Session */}
+        {hasActiveSession ? (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[styles.actionCard, { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' }]}
+            onPress={() => navigation.navigate('ActiveSession', { store, status })}
+          >
+            <View style={styles.actionLeft}>
+              <View style={[styles.actionIconBox, { backgroundColor: '#E0F2FE' }]}>
+                <ClockIcon size={20} color="#0284C7" />
+              </View>
+              <View style={styles.actionTextCol}>
+                <Text style={styles.actionTitle}>Return to Shift</Text>
+                <Text style={styles.actionSubtitle}>You possess an active shift session</Text>
+              </View>
             </View>
-            <View style={styles.actionTextCol}>
-              <Text style={styles.actionTitle}>Clock In ({isOnSite ? 'On-Site' : 'Offline Visit'})</Text>
-              <Text style={styles.actionSubtitle}>
-                {isOnSite ? 'You are at the store location' : 'Not at store (e.g., working from office)'}
-              </Text>
+            <ChevronRight size={18} color="#9CA3AF" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[styles.actionCard, { backgroundColor: actionCardBg, borderColor: actionCardBorder }]}
+            onPress={() => navigation.navigate('ConfirmClockIn', { store, status })}
+          >
+            <View style={styles.actionLeft}>
+              <View style={[styles.actionIconBox, { backgroundColor: actionIconBg }]}>
+                <ClockIcon size={20} color={actionIconColor} />
+              </View>
+              <View style={styles.actionTextCol}>
+                <Text style={styles.actionTitle}>Clock In ({isOnSite ? 'On-Site' : 'Offline Visit'})</Text>
+                <Text style={styles.actionSubtitle}>
+                  {isOnSite ? 'You are at the store location' : 'Not at store (e.g., working from office)'}
+                </Text>
+              </View>
             </View>
-          </View>
-          <ChevronRight size={18} color="#9CA3AF" />
-        </TouchableOpacity>
+            <ChevronRight size={18} color="#9CA3AF" />
+          </TouchableOpacity>
+        )}
 
         {/* Action 3: Change Store */}
         <TouchableOpacity

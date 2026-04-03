@@ -42,27 +42,54 @@ const StoreSelectionScreen = ({ navigation }) => {
     }, [navigation])
   );
 
-  const loadData = async () => {
+  // Load standard constants natively on mount
+  React.useEffect(() => {
+    const fetchConstants = async () => {
+      try {
+        const [fetchedRetailers, fetchedRegions] = await Promise.all([
+          getRetailers(),
+          getRegions()
+        ]);
+        setRetailers(fetchedRetailers);
+        setRegions(fetchedRegions);
+        const savedFavs = await AsyncStorage.getItem('favorite_stores');
+        if (savedFavs) setFavorites(JSON.parse(savedFavs));
+      } catch (e) {
+        console.error("Filter constants load fail:", e);
+      }
+    };
+    fetchConstants();
+  }, []);
+
+  const fetchStoresData = async (query = '', retailer = '', region = '', sort = false) => {
     setLoading(true);
     try {
-      const [fetchedStores, fetchedRetailers, fetchedRegions] = await Promise.all([
-        getStores(),
-        getRetailers(),
-        getRegions()
-      ]);
-      setStores(fetchedStores);
-      setRetailers(fetchedRetailers);
-      setRegions(fetchedRegions);
+      const params = {};
+      if (query) params.search = query;
+      if (retailer) params.retailer_id = retailer;
+      if (region) params.region_id = region;
+      if (sort) params.sort = 'az';
 
-      const savedFavs = await AsyncStorage.getItem('favorite_stores');
-      if (savedFavs) {
-        setFavorites(JSON.parse(savedFavs));
-      }
+      const fetchedStores = await getStores(params);
+      setStores(fetchedStores);
     } catch (error) {
-      console.error(error);
+      console.log('Error fetching stores', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Debounced execution for search
+  React.useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchStoresData(searchQuery, selectedRetailer, selectedRegion, sortAZ);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, selectedRetailer, selectedRegion, sortAZ]);
+
+  const loadData = async () => {
+    // Initial load handler for useFocusEffect returning to this screen
+    fetchStoresData(searchQuery, selectedRetailer, selectedRegion, sortAZ);
   };
 
   const toggleFavorite = async (storeId) => {
@@ -84,20 +111,12 @@ const StoreSelectionScreen = ({ navigation }) => {
     setSortAZ(false);
   };
 
-  const filteredStores = stores.filter(store => {
-    if (searchQuery && !store.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (selectedRetailer && store.retailer !== selectedRetailer) return false;
-    if (selectedRegion && store.region !== selectedRegion) return false;
-    if (favoritesOnly && !favorites.includes(store.id)) return false;
-    return true;
-  });
+  const favoriteStores = stores.filter(s => favorites.includes(s.id));
+  let otherStores = stores.filter(s => !favorites.includes(s.id));
 
-  if (sortAZ) {
-    filteredStores.sort((a, b) => a.name.localeCompare(b.name));
+  if (favoritesOnly) {
+    otherStores = []; // Only show favoriteStores section if toggled globally
   }
-
-  const favoriteStores = filteredStores.filter(s => favorites.includes(s.id));
-  const otherStores = filteredStores.filter(s => !favorites.includes(s.id));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -111,7 +130,7 @@ const StoreSelectionScreen = ({ navigation }) => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onFilterPress={() => setShowFilters(true)}
-        resultsText={`${filteredStores.length} Stores Found`}
+        resultsText={`${stores.length} Stores Found`}
         placeholder="Search stores, locations..."
       />
 

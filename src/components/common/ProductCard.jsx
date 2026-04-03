@@ -16,7 +16,13 @@ import StatusBadge from './StatusBadge';
  *                  e.g. [{ label: 'Current Stock', value: '10 units' }, ...]
  */
 const ProductCard = ({ product, onPress, showStatus = false, badgeLabel, badgeStatus, detailRows }) => {
-  const { name, articleNo, price, category, supplierName, image, status } = product;
+  const { name, sku, price, category, image_url, range_status, supplier } = product;
+
+  const articleNo = sku || product.articleNo;
+  const image = image_url || product.image;
+  const status = range_status || product.status;
+  const supplierName = supplier?.name || product.supplierName;
+  const numericPrice = price ? Number(price) : 0;
 
   const effectiveBadgeStatus = badgeStatus || status;
   const effectiveBadgeLabel = badgeLabel || status;
@@ -37,7 +43,7 @@ const ProductCard = ({ product, onPress, showStatus = false, badgeLabel, badgeSt
           <Text style={styles.name} numberOfLines={1}>{name}</Text>
           <View style={styles.articleRow}>
             <Text style={styles.articleNo}>Article #: {articleNo}</Text>
-            <Text style={styles.price}>${price?.toFixed(2)}</Text>
+            <Text style={styles.price}>${numericPrice.toFixed(2)}</Text>
           </View>
         </View>
       </View>

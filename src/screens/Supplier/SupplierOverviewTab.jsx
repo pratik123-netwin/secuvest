@@ -69,13 +69,16 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
 
   useEffect(() => { loadMetrics(); }, [loadMetrics]);
 
-  const drilldown = (title, type) => navigation.navigate('MetricsDrilldown', { title, type });
+  const drilldown = (title, type, status) => navigation.navigate('MetricsDrilldown', { title, type, status });
 
   if (loading) return <LoadingSkeleton count={4} cardHeight={130} />;
   if (error) return <ErrorState message={error} onRetry={loadMetrics} />;
   if (!metrics) return null;
 
-  const { articlePerformance: ap, stockHealth: sh, salesMetrics: sm, wastageTracking: wt } = metrics;
+  const ap = metrics.article_performance;
+  const sh = metrics.stock_health;
+  const sm = metrics.sales_metrics;
+  const wt = metrics.wastage_tracking;
 
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -91,13 +94,13 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
 
         <View style={styles.metaRow}>
           <Text style={styles.metaLabel}>Active Article</Text>
-          <Text style={styles.metaValue}>{ap.active} / {ap.total}</Text>
+          <Text style={styles.metaValue}>{ap.ranged} / {ap.total}</Text>
         </View>
-        <ProgressBar value={ap.active} max={ap.total} />
+        <ProgressBar value={ap.ranged} max={ap.total} />
         <RangedDerangedRow
-          ranged={ap.ranged} deranged={ap.deranged}
-          onDrillRanged={() => drilldown('Article Performance', 'articlePerformance')}
-          onDrillDeranged={() => drilldown('Article Performance', 'articlePerformance')}
+          ranged={ap.ranged} deranged={ap.de_ranged}
+          onDrillRanged={() => drilldown('Article Performance', 'articlePerformance', 'ranged')}
+          onDrillDeranged={() => drilldown('Article Performance', 'articlePerformance', 'de_ranged')}
         />
       </View>
 
@@ -112,14 +115,14 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
 
         <View style={styles.metaRow}>
           <Text style={styles.metaLabel}>Stock Availability</Text>
-          <Text style={styles.metaValue}>{sh.availabilityPercent}%</Text>
+          <Text style={styles.metaValue}>{sh.availability_percentage || 0}%</Text>
         </View>
-        <ProgressBar value={sh.availabilityPercent} max={100} />
+        <ProgressBar value={sh.availability_percentage || 0} max={100} />
         <RangedDerangedRow
-          ranged={sh.ranged} deranged={sh.deranged}
+          ranged={sh.in_stock || 0} deranged={sh.out_of_stock || 0}
           derangedVariant="amber"
-          onDrillRanged={() => drilldown('Stock Health', 'stockHealth')}
-          onDrillDeranged={() => drilldown('Stock Health', 'stockHealth')}
+          onDrillRanged={() => drilldown('Stock Health', 'stockHealth', 'in_stock')}
+          onDrillDeranged={() => drilldown('Stock Health', 'stockHealth', 'out_of_stock')}
         />
       </View>
 
@@ -137,7 +140,7 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
         </View>
         <View>
           <Text style={styles.iconRowLabel}>Rate of Sale</Text>
-          <Text style={styles.iconRowValue}>{sm.rateOfSale}</Text>
+          <Text style={styles.iconRowValue}>{sm.rate_of_sale}</Text>
         </View>
       </View>
 
@@ -148,7 +151,7 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
         </View>
         <View>
           <Text style={styles.iconRowLabel}>No Sales (30 days)</Text>
-          <Text style={styles.iconRowValue}>{sm.noSales30Days}</Text>
+          <Text style={styles.iconRowValue}>{sm.no_sales_30_days}</Text>
         </View>
       </View>
 
@@ -163,7 +166,7 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
               <Text style={styles.rdLabel}>Wastage Qty</Text>
               <Trash2 size={16} color="#DC2626" />
             </View>
-            <Text style={[styles.rdValue, { color: '#DC2626' }]}>{wt.qty}</Text>
+            <Text style={[styles.rdValue, { color: '#DC2626' }]}>{wt.wastage_quantity || 0}</Text>
             <Text style={styles.rdSub}>Units wasted</Text>
           </View>
           <View style={[styles.rdCard, { backgroundColor: '#FFF7ED', borderColor: '#FED7AA' }]}>
@@ -171,7 +174,7 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
               <Text style={styles.rdLabel}>Wastage %</Text>
               <TrendingUp size={16} color="#F97316" />
             </View>
-            <Text style={[styles.rdValue, { color: '#F97316' }]}>{wt.percentage?.toFixed(2)}%</Text>
+            <Text style={[styles.rdValue, { color: '#F97316' }]}>{Number(wt.wastage_percentage || 0).toFixed(2)}%</Text>
             <Text style={styles.rdSub}>vs Total Sales</Text>
           </View>
         </View>
@@ -181,7 +184,7 @@ const SupplierOverviewTab = ({ supplierId, navigation }) => {
           </View>
           <View>
             <Text style={styles.iconRowLabel}>Wastage Status</Text>
-            <Text style={styles.iconRowValue}>{wt.statusText}</Text>
+            <Text style={styles.iconRowValue}>{wt.wastage_status || 'N/A'}</Text>
           </View>
         </View>
       </View>

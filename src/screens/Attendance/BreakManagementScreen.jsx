@@ -25,7 +25,12 @@ const BreakManagementScreen = ({ navigation }) => {
 
   const handleClockOutPress = () => {
     if (session) {
-      navigation.navigate('ConfirmClockOut', { store: session.store, status: session.status, startTime: session.startTime });
+      navigation.navigate('ConfirmClockOut', { 
+        store: session.store, 
+        status: session.status, 
+        startTime: session.startTime,
+        session_id: session.session_id
+      });
     }
   };
 

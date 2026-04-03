@@ -8,6 +8,7 @@ import { validateName, validateEmailOrPhone, validatePassword } from '../../util
 import { COLORS } from '../../constants/colors';
 import { User, Mail } from 'lucide-react-native';
 import AuthHeader, { AuthFooter } from '../../components/AuthHeader';
+import { signupAPI } from '../../services/authService';
 
 const Signup = ({ navigation }) => {
   const [form, setForm] = useState({ name: '', day: '', month: '', year: '', gender: '', emailOrPhone: '', password: '' });
@@ -17,7 +18,7 @@ const Signup = ({ navigation }) => {
 
   const updateForm = (key, value) => setForm({ ...form, [key]: value });
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     const newErrors = {
       name: validateName(form.name),
       email: validateEmailOrPhone(form.emailOrPhone),
@@ -32,13 +33,16 @@ const Signup = ({ navigation }) => {
     }
 
     setErrors({});
-    setLoading(true);
-
-    // Simulate API call and redirect to OTP Verification instead of logging in
-    setTimeout(() => {
+    try {
+      setLoading(true);
+      await signupAPI(form.name, form.emailOrPhone, form.password, `${form.year}-${form.month}-${form.day}`, form.gender.toLowerCase());
       setLoading(false);
-      navigation.navigate('OTPVerification', { emailOrPhone: form.emailOrPhone });
-    }, 1000);
+      navigation.navigate('OTPVerification', { emailOrPhone: form.emailOrPhone, flow: 'signup' });
+    } catch (err) {
+      setLoading(false);
+      const safeErrorMessage = typeof err === 'string' ? err : (err?.message || 'Registration failed.');
+      setErrors({ ...errors, general: safeErrorMessage });
+    }
   };
 
   return (
@@ -52,6 +56,9 @@ const Signup = ({ navigation }) => {
         />
 
         <View style={styles.formContainer}>
+          {!!errors.general && (
+            <Text style={[styles.errorText, { marginBottom: 10, textAlign: 'center' }]}>{errors.general}</Text>
+          )}
           <CustomInput
             label="Full Name *"
             placeholder="Enter your name"
@@ -119,6 +126,8 @@ const Signup = ({ navigation }) => {
 
           <CustomButton title="Sign Up" onPress={handleSignup} loading={loading} />
 
+          <View style={styles.divider} />
+
           <View style={styles.linkContainer}>
             <Text style={styles.text}>Already have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('LoginStep1')}>
@@ -135,6 +144,7 @@ const Signup = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.background },
   formContainer: { marginTop: 4, paddingHorizontal: 20 },
   label: { marginBottom: 8, fontSize: 14, color: COLORS.text, fontWeight: '500' },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
@@ -166,6 +176,7 @@ const styles = StyleSheet.create({
     color: '#111',
     marginLeft: 8,
   },
+  divider: { height: 1, backgroundColor: COLORS.border, marginTop: 20, },
 });
 
 export default Signup;

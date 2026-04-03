@@ -3,31 +3,44 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import StatusCard from '../../components/common/StatusCard';
 import { COLORS } from '../../constants/colors';
 import { STRINGS } from '../../constants/strings';
+import { formatDate } from '../../utils/formatDate';
 
-const ProductOverviewTab = ({ product }) => {
+/**
+ * ProductOverviewTab
+ * Receives `overview` prop from ProductDetailScreen:
+ * { stock_status, range_status, rate_of_sale, last_sale_date }
+ */
+const ProductOverviewTab = ({ overview = {} }) => {
+  const {
+    stock_status,
+    range_status,
+    rate_of_sale,
+    last_sale_date,
+  } = overview;
+
   return (
     <ScrollView style={styles.wrapper} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
       {/* Status Cards Row */}
       <View style={styles.cardRow}>
-        <StatusCard label={STRINGS.stockStatus} value={product.stockStatus} type="stock" />
-        <StatusCard label={STRINGS.rangeStatus} value={product.rangeStatus} type="range" />
+        <StatusCard label={STRINGS.stockStatus} value={stock_status} type="stock" />
+        <StatusCard label={STRINGS.rangeStatus} value={range_status} type="range" />
       </View>
 
       {/* Sales Performance */}
       <Text style={styles.sectionTitle}>{STRINGS.salesPerformance}</Text>
       <View style={styles.infoCard}>
-        <InfoRow label={STRINGS.rateOfSale} value={`${product.rateOfSale} units/day`} />
-        <InfoRow label={STRINGS.lastSold} value={product.lastSold} isLast />
+        <InfoRow label={STRINGS.rateOfSale} value={rate_of_sale != null ? `${rate_of_sale} units/day` : 'N/A'} />
+        <InfoRow label={STRINGS.lastSold} value={formatDate(last_sale_date)} isLast />
       </View>
     </ScrollView>
   );
 };
 
 const InfoRow = ({ label, value, isLast }) => (
-  <View style={[styles.infoRow, !isLast && styles.infoRowBorder]}>
+  <View style={[styles.infoRow, !isLast]}>
     <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={styles.infoValue}>{value}</Text>
+    <Text style={styles.infoValue}>{value ?? 'N/A'}</Text>
   </View>
 );
 

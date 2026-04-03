@@ -11,7 +11,7 @@ import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import Checkbox from '../../components/common/Checkbox';
-import { getProducts, getCategories, getSupplierNames } from '../../services/productService';
+import { getProducts, getProductCategories, getProductSuppliers } from '../../services/productService';
 import { COLORS } from '../../constants/colors';
 import { STRINGS } from '../../constants/strings';
 
@@ -25,44 +25,65 @@ const ProductListScreen = ({ navigation }) => {
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // Filter
+  // Filter options from API
   const [filterVisible, setFilterVisible] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [supplierNames, setSupplierNames] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+
+  // Active filter values
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [sortAZ, setSortAZ] = useState(false);
 
-  const loadData = useCallback(async () => {
+  // Pending filter values (held until Apply is tapped)
+  const [pendingCategory, setPendingCategory] = useState('');
+  const [pendingSupplier, setPendingSupplier] = useState('');
+  const [pendingSortAZ, setPendingSortAZ] = useState(false);
+
+  const loadData = useCallback(async (search = '', category = '', supplierId = '', sort = false) => {
     try {
       setLoading(true);
       setError(null);
+
+      const params = {};
+      if (search) params.search = search;
+      if (category) params.category = category;
+      if (supplierId) params.supplier_id = supplierId;
+      if (sort) params.sort = 'az';
+
       const [data, cats, supps] = await Promise.all([
-        getProducts(),
-        getCategories(),
-        getSupplierNames(),
+        getProducts(params),
+        // getProductCategories(),
+        // getProductSuppliers(),
       ]);
+
       setProducts(data);
-      setCategories(cats);
-      setSupplierNames(supps);
-    } catch {
-      setError('Failed to load products.');
+      // setCategories(cats);
+      // setSuppliers(supps);
+    } catch (err) {
+      console.log("Error loading products: ", err);
+      setError(typeof err === 'string' ? err : 'Failed to load products.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
+  useFocusEffect(useCallback(() => {
+    loadData(searchQuery, selectedCategory, selectedSupplier, sortAZ);
+  }, [loadData]));
 
-  const filtered = products
-    .filter(p => {
-      const q = searchQuery.toLowerCase();
-      const matchSearch = p.name.toLowerCase().includes(q) || p.articleNo.toLowerCase().includes(q);
-      const matchCat = selectedCategory ? p.category === selectedCategory : true;
-      const matchSup = selectedSupplier ? p.supplierName === selectedSupplier : true;
-      return matchSearch && matchCat && matchSup;
-    })
-    .sort((a, b) => sortAZ ? a.name.localeCompare(b.name) : 0);
+  const handleApplyFilters = () => {
+    setSelectedCategory(pendingCategory);
+    setSelectedSupplier(pendingSupplier);
+    setSortAZ(pendingSortAZ);
+    setFilterVisible(false);
+    loadData(searchQuery, pendingCategory, pendingSupplier, pendingSortAZ);
+  };
+
+  // Search executes on change with debounce — backend handles filtering
+  const handleSearchChange = (text) => {
+    setSearchQuery(text);
+  };
 
   const toggleMultiSelect = (val) => {
     setIsMultiSelect(val);
@@ -74,6 +95,12 @@ const ProductListScreen = ({ navigation }) => {
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
+
+  // Local sort only (backend handles search/filter)
+  const displayProducts = [...products].sort((a, b) => {
+    if (!sortAZ) return 0;
+    return (a?.name || '').localeCompare(b?.name || '');
+  });
 
   const renderProduct = ({ item }) => (
     <View style={isMultiSelect ? styles.multiSelectCardRow : null}>
@@ -112,10 +139,15 @@ const ProductListScreen = ({ navigation }) => {
 
       <SearchBar
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onFilterPress={() => setFilterVisible(true)}
+        setSearchQuery={handleSearchChange}
+        onFilterPress={() => {
+          setPendingCategory(selectedCategory);
+          setPendingSupplier(selectedSupplier);
+          setPendingSortAZ(sortAZ);
+          setFilterVisible(true);
+        }}
         placeholder={STRINGS.searchProducts}
-        resultsText={loading ? undefined : `${filtered.length} ${STRINGS.productsAvailable}`}
+        resultsText={loading ? undefined : `${displayProducts.length} ${STRINGS.productsAvailable}`}
       />
 
       <View style={styles.toggleRow}>
@@ -134,11 +166,11 @@ const ProductListScreen = ({ navigation }) => {
       {loading ? (
         <LoadingSkeleton count={4} cardHeight={110} />
       ) : error ? (
-        <ErrorState message={error} onRetry={loadData} />
+        <ErrorState message={error} onRetry={() => loadData(searchQuery, selectedCategory, selectedSupplier, sortAZ)} />
       ) : (
         <FlatList
-          data={filtered}
-          keyExtractor={item => item.id}
+          data={displayProducts}
+          keyExtractor={item => String(item.id)}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={<EmptyState title="No products found" message="Try adjusting your search or filters." />}
@@ -149,20 +181,22 @@ const ProductListScreen = ({ navigation }) => {
       <FloatingActionButton
         isVisible={isMultiSelect && selectedIds.length > 0}
         text={`${selectedIds.length} ${STRINGS.productsSelected}`}
-        onPress={() => { }}
+        onPress={() => {
+          navigation.navigate('SelectedProducts', { selectedIds });
+        }}
       />
 
       <FilterModal
         visible={filterVisible}
         onClose={() => setFilterVisible(false)}
         retailers={categories}
-        regions={supplierNames}
-        selectedRetailer={selectedCategory}
-        setSelectedRetailer={setSelectedCategory}
-        selectedRegion={selectedSupplier}
-        setSelectedRegion={setSelectedSupplier}
-        sortAZ={sortAZ}
-        setSortAZ={setSortAZ}
+        regions={suppliers}
+        selectedRetailer={pendingCategory}
+        setSelectedRetailer={setPendingCategory}
+        selectedRegion={pendingSupplier}
+        setSelectedRegion={setPendingSupplier}
+        sortAZ={pendingSortAZ}
+        setSortAZ={setPendingSortAZ}
         favoritesOnly={false}
         setFavoritesOnly={() => { }}
         showFavorites={false}
@@ -170,7 +204,7 @@ const ProductListScreen = ({ navigation }) => {
         regionLabel={STRINGS.suppliers}
         retailerPlaceholder={STRINGS.allCategories}
         regionPlaceholder={STRINGS.allSuppliers}
-        onApply={() => setFilterVisible(false)}
+        onApply={handleApplyFilters}
       />
     </SafeAreaView>
   );

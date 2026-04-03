@@ -8,7 +8,8 @@ import ProductCard from '../../components/common/ProductCard';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
-import { getSupplierProducts, getSupplierMetrics } from '../../services/supplierService';
+import { getMetricsDrilldown, getSupplierMetrics } from '../../services/supplierService';
+import { TouchableOpacity } from 'react-native';
 
 /* ─── Progress bar ────────────────────────────────────────────────────────── */
 const ProgressBar = ({ value, max }) => {
@@ -32,6 +33,8 @@ const SCREEN_CONFIG = {
     card2: { label: 'De-ranged', icon: 'layers', color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
     getCard1Value: (m) => m.ranged,
     getCard2Value: (m) => m.deranged,
+    card1Status: 'ranged',
+    card2Status: 'de_ranged',
     getDetailRows: () => [],
     getBadge: (p) => ({ badgeLabel: p.status, badgeStatus: p.status }),
   },
@@ -45,12 +48,14 @@ const SCREEN_CONFIG = {
     card2: { label: 'Out of Stock', icon: 'layers', color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
     getCard1Value: (m) => m.ranged,
     getCard2Value: (m) => m.deranged,
+    card1Status: 'in_stock',
+    card2Status: 'out_of_stock',
     getDetailRows: (p) => [
-      { label: 'Current Stock', value: `${p.currentStock ?? 0} units` },
+      { label: 'Current Stock', value: `${p.stock_quantity || p.currentStock || 0} units` },
       { label: 'Reorder Level', value: `${p.reorderLevel ?? 0} units` },
       { label: 'Last Restocked', value: p.lastRestocked ?? '-' },
     ],
-    getBadge: (p) => ({ badgeLabel: p.stockStatus, badgeStatus: p.stockStatus }),
+    getBadge: (p) => ({ badgeLabel: p.stock_status || p.stockStatus, badgeStatus: p.stock_status || p.stockStatus }),
   },
   salesMetrics: {
     headerTitle: 'Sales Overview',
@@ -62,52 +67,63 @@ const SCREEN_CONFIG = {
     card2: null,
     getCard1Value: () => null,
     getCard2Value: () => null,
-    getDetailRows: (p) => [
-      { label: 'Avg. Daily Sales', value: `${p.avgDailySales ?? 0} units` },
-      { label: 'Total Sales', value: `${p.totalSales ?? 0} units` },
-      { label: 'Last Sale', value: p.lastSale ?? '-' },
-    ],
-    getBadge: (p) => ({ badgeLabel: p.trend, badgeStatus: p.trend }),
+    getDetailRows: (p) => {
+      const date = p.last_sale_date ? new Date(p.last_sale_date).toLocaleDateString() : (p.lastSale ?? '-');
+      return [
+        { label: 'Rate of Sale', value: `${p.rate_of_sale || p.avgDailySales || 0} units` },
+        { label: 'Total Sales', value: `$${p.totalSales || p.highest_sale_amount || 0}` },
+        { label: 'Last Sale', value: date },
+      ];
+    },
+    getBadge: (p) => ({ badgeLabel: p.trend || 'Trend', badgeStatus: p.trend || 'Trend' }),
   },
 };
 
 /* ─── Screen ──────────────────────────────────────────────────────────────── */
 const MetricsDrilldownScreen = ({ route }) => {
-  const { type = 'articlePerformance', supplierId } = route.params || {};
+  const { type = 'articlePerformance', status: initialStatus, supplierId } = route.params || {};
   const config = SCREEN_CONFIG[type] || SCREEN_CONFIG.articlePerformance;
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeStatus, setActiveStatus] = useState(initialStatus || config.card1Status || '');
   const [products, setProducts] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const load = useCallback(async () => {
+  const loadData = async (query = '', statusVal = '') => {
     try {
       setLoading(true); setError(null);
+      const params = { type };
+      if (statusVal) params.status = statusVal;
+      if (query) params.search = query;
+
       const [prods, mets] = await Promise.all([
-        getSupplierProducts(supplierId),
-        getSupplierMetrics(supplierId),
+        getMetricsDrilldown(supplierId, params),
+        getSupplierMetrics(supplierId), // Preserving metrics overlay fetching
       ]);
       setProducts(prods);
       setMetrics(mets);
     } catch {
-      setError('Failed to load data.');
+      setError('Failed to fetch drilldown data.');
     } finally {
       setLoading(false);
     }
-  }, [supplierId]);
+  };
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadData(searchQuery, activeStatus);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, activeStatus, supplierId]);
 
   const metricData = metrics ? metrics[type] : null;
   const salesMetrics = metrics?.salesMetrics;
   const progress = metricData && config.getProgress ? config.getProgress(metricData) : null;
 
-  const filtered = products.filter(p => {
-    const q = searchQuery.toLowerCase();
-    return p.name.toLowerCase().includes(q) || p.articleNo.toLowerCase().includes(q);
-  });
+  // Removing local filtering, relying explicitly on backend API dynamic search.
+  const filtered = products;
 
   /* ── FlatList header ── */
   const ListHeader = (
@@ -126,7 +142,14 @@ const MetricsDrilldownScreen = ({ route }) => {
           )}
           {progress && <ProgressBar value={progress.value} max={progress.max} />}
           <View style={styles.cardRow}>
-            <View style={[styles.summaryCard, { backgroundColor: config.card1.bg, borderColor: config.card1.border }]}>
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              onPress={() => setActiveStatus(config.card1Status)}
+              style={[
+                styles.summaryCard, 
+                { backgroundColor: config.card1.bg, borderColor: activeStatus === config.card1Status ? config.card1.color : config.card1.border },
+                activeStatus !== config.card1Status && { opacity: 0.6 }
+              ]}>
               <View style={styles.cardTopRow}>
                 <Text style={styles.cardLabel}>{config.card1.label}</Text>
                 {config.card1.icon === 'check'
@@ -136,8 +159,15 @@ const MetricsDrilldownScreen = ({ route }) => {
               <Text style={[styles.cardValue, { color: config.card1.color }]}>
                 {config.getCard1Value(metricData)}
               </Text>
-            </View>
-            <View style={[styles.summaryCard, { backgroundColor: config.card2.bg, borderColor: config.card2.border }]}>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              onPress={() => setActiveStatus(config.card2Status)}
+              style={[
+                styles.summaryCard, 
+                { backgroundColor: config.card2.bg, borderColor: activeStatus === config.card2Status ? config.card2.color : config.card2.border },
+                activeStatus !== config.card2Status && { opacity: 0.6 }
+              ]}>
               <View style={styles.cardTopRow}>
                 <Text style={styles.cardLabel}>{config.card2.label}</Text>
                 {config.card2.icon === 'check'
@@ -147,7 +177,7 @@ const MetricsDrilldownScreen = ({ route }) => {
               <Text style={[styles.cardValue, { color: config.card2.color }]}>
                 {config.getCard2Value(metricData)}
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -187,8 +217,8 @@ const MetricsDrilldownScreen = ({ route }) => {
         isMatrics={true}
       />
 
-      {loading && <LoadingSkeleton count={4} cardHeight={type === 'articlePerformance' ? 90 : 130} />}
-      {error && <ErrorState message={error} onRetry={load} />}
+      {loading && filtered.length === 0 && <LoadingSkeleton count={4} cardHeight={type === 'articlePerformance' ? 90 : 130} />}
+      {error && <ErrorState message={error} onRetry={() => loadData(searchQuery, activeStatus)} />}
     </View>
   );
 

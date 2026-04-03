@@ -2,25 +2,44 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { COLORS } from '../../constants/colors';
 import { STRINGS } from '../../constants/strings';
+import { formatDate } from '../../utils/formatDate';
 
-const ProductStockTab = ({ product }) => {
+/**
+ * ProductStockTab
+ * Receives `stock` prop from ProductDetailScreen:
+ * { last_order_date, last_order_qty, last_receipt_date,
+ *   last_receipt_qty, order_status, stock_quantity,
+ *   reorder_level, last_restocked }
+ */
+const ProductStockTab = ({ stock = {} }) => {
+  const {
+    last_order_date,
+    last_order_qty,
+    last_receipt_date,
+    last_receipt_qty,
+    order_status,
+    stock_quantity,
+    reorder_level,
+    last_restocked,
+  } = stock;
+
   return (
     <ScrollView style={styles.wrapper} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
       {/* Order & Receipt History */}
       <Text style={styles.sectionTitle}>{STRINGS.orderReceiptHistory}</Text>
       <View style={styles.infoCard}>
-        <InfoRow label={STRINGS.lastOrderDate} value={product.lastOrderDate} />
-        <InfoRow label={STRINGS.lastOrderQuantity} value={`${product.lastOrderQty} units`} />
-        <InfoRow label={STRINGS.lastReceiptDate} value={product.lastReceiptDate} />
-        <InfoRow label={STRINGS.lastReceiptQuantity} value={`${product.lastReceiptQty} units`} />
-        <InfoRow label={STRINGS.orderStatus} value={product.orderStatus} isLast />
+        <InfoRow label={STRINGS.lastOrderDate} value={formatDate(last_order_date)} />
+        <InfoRow label={STRINGS.lastOrderQuantity} value={last_order_qty != null ? `${last_order_qty} units` : 'N/A'} />
+        <InfoRow label={STRINGS.lastReceiptDate} value={formatDate(last_receipt_date)} />
+        <InfoRow label={STRINGS.lastReceiptQuantity} value={last_receipt_qty != null ? `${last_receipt_qty} units` : 'N/A'} />
+        <InfoRow label={STRINGS.orderStatus} value={order_status ?? 'N/A'} isLast />
       </View>
 
       {/* Stock Information */}
       <Text style={styles.sectionTitle}>{STRINGS.stockInformation}</Text>
       <View style={styles.infoCard}>
-        <InfoRow label={STRINGS.stock} value={`${product.currentStock} units`} isLast />
+        <InfoRow label={STRINGS.stock} value={stock_quantity != null ? `${stock_quantity} units` : 'N/A'} isLast />
       </View>
 
     </ScrollView>
@@ -28,7 +47,7 @@ const ProductStockTab = ({ product }) => {
 };
 
 const InfoRow = ({ label, value, isLast }) => (
-  <View style={[styles.infoRow, !isLast && styles.infoRowBorder]}>
+  <View style={[styles.infoRow, !isLast]}>
     <Text style={styles.infoLabel}>{label}</Text>
     <Text style={styles.infoValue}>{value}</Text>
   </View>

@@ -3,49 +3,76 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { Building2, ExternalLink } from 'lucide-react-native';
 import { COLORS } from '../../constants/colors';
 import { STRINGS } from '../../constants/strings';
+import { formatDate } from '../../utils/formatDate';
 
-const ProductDetailsTab = ({ product, navigation }) => {
+/**
+ * ProductDetailsTab
+ * Receives `details` prop from ProductDetailScreen:
+ * { barcode, article_no, last_updated, price, supplier: { id, name } }
+ */
+const ProductDetailsTab = ({ details = {}, navigation }) => {
+  const {
+    barcode,
+    article_no,
+    last_updated,
+    price,
+    supplier,
+  } = details;
+
+  const numericPrice = price != null ? Number(price) : null;
+
   return (
     <ScrollView style={styles.wrapper} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
       {/* Product Information */}
       <Text style={styles.sectionTitle}>{STRINGS.productInformation}</Text>
       <View style={styles.infoCard}>
-        <InfoRow label={STRINGS.barcode} value={product.barcode} />
-        <InfoRow label={STRINGS.articleNumber} value={product.articleNumber} />
-        <InfoRow label={STRINGS.lastUpdated} value={product.lastUpdated} />
-        <InfoRow label={STRINGS.price} value={`$${product.price?.toFixed(2)}`} isLast />
+        <InfoRow label={STRINGS.barcode} value={barcode ?? 'N/A'} />
+        <InfoRow label={STRINGS.articleNumber} value={article_no ?? 'N/A'} />
+        <InfoRow label={STRINGS.lastUpdated} value={formatDate(last_updated)} />
+        <InfoRow
+          label={STRINGS.price}
+          value={numericPrice != null ? `$${numericPrice.toFixed(2)}` : 'N/A'}
+          isLast
+        />
       </View>
 
       {/* Supplier Link */}
-      <TouchableOpacity
-        style={styles.supplierCard}
-        activeOpacity={0.7}
-        onPress={() => {
-          navigation.navigate('SupplierFlow', {
-            screen: 'SupplierProfile',
-            params: { supplier: { id: product.supplierId, name: product.supplierName } },
-          });
-        }}
-      >
-        <View style={styles.supplierLeft}>
-          <View style={styles.supplierIconWrap}>
-            <Building2 size={18} color={COLORS.iconBlue} />
+      {supplier && (
+        <TouchableOpacity
+          style={styles.supplierCard}
+          activeOpacity={0.7}
+          onPress={() => {
+            navigation.navigate('SupplierFlow', {
+              screen: 'SupplierDetail',
+              params: {
+                supplier: {
+                  id: supplier.id,
+                  name: supplier.name,
+                },
+              },
+            });
+          }}
+        >
+          <View style={styles.supplierLeft}>
+            <View style={styles.supplierIconWrap}>
+              <Building2 size={18} color={COLORS.iconBlue} />
+            </View>
+            <View>
+              <Text style={styles.supplierLabel}>{STRINGS.supplier}</Text>
+              <Text style={styles.supplierName}>{supplier.name}</Text>
+            </View>
           </View>
-          <View>
-            <Text style={styles.supplierLabel}>{STRINGS.supplier}</Text>
-            <Text style={styles.supplierName}>{product.supplierName}</Text>
-          </View>
-        </View>
-        <ExternalLink size={16} color={COLORS.textMuted} />
-      </TouchableOpacity>
+          <ExternalLink size={16} color={COLORS.textMuted} />
+        </TouchableOpacity>
+      )}
 
     </ScrollView>
   );
 };
 
 const InfoRow = ({ label, value, isLast }) => (
-  <View style={[styles.infoRow, !isLast && styles.infoRowBorder]}>
+  <View style={[styles.infoRow, !isLast]}>
     <Text style={styles.infoLabel}>{label}</Text>
     <Text style={styles.infoValue}>{value}</Text>
   </View>

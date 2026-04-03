@@ -8,6 +8,7 @@ import CustomButton from '../../components/CustomButton';
 import AuthHeader, { AuthFooter } from '../../components/AuthHeader';
 import { validateEmailOrPhone } from '../../utils/validation';
 import { COLORS } from '../../constants/colors';
+import { checkIdentifier } from '../../services/authService';
 
 const LoginStep1 = ({ navigation }) => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -18,11 +19,15 @@ const LoginStep1 = ({ navigation }) => {
     const valError = validateEmailOrPhone(emailOrPhone);
     if (valError) { setError(valError); return; }
     setError('');
-    setLoading(true);
-    setTimeout(() => {
+    try {
+      setLoading(true);
+      await checkIdentifier(emailOrPhone);
       setLoading(false);
       navigation.navigate('LoginStep2', { emailOrPhone });
-    }, 800);
+    } catch (err) {
+      setLoading(false);
+      setError(err);
+    }
   };
 
   return (

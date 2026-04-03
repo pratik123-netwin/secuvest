@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { store } from './src/store';
 import AppNavigator from './src/navigation/AppNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { restoreToken } from './src/store/slices/authSlice';
+import { setCredentials } from './src/store/slices/authSlice';
 import { ActivityIndicator, View, StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -16,13 +16,15 @@ const Root = () => {
       let userToken;
       let userData;
       try {
-        userToken = await AsyncStorage.getItem('token');
+        userToken = await AsyncStorage.getItem('authToken');
         const userStr = await AsyncStorage.getItem('user');
         if (userStr) userData = JSON.parse(userStr);
       } catch (e) {
         // Restoring token failed
       }
-      store.dispatch(restoreToken({ token: userToken, user: userData }));
+      if (userToken) {
+        store.dispatch(setCredentials({ token: userToken, user: userData }));
+      }
       setIsReady(true);
     };
 

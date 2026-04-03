@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getActiveSession } from '../../services/attendanceService';
 import { CheckCircle, MessageSquare, Home } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
 import StoreInfoCard from '../../components/StoreInfoCard';
@@ -10,9 +11,26 @@ const ActiveSessionScreen = ({ route, navigation }) => {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSecondsElapsed((prev) => prev + 1);
-    }, 1000);
+    let interval;
+    const initTimer = async () => {
+      try {
+        const session = await getActiveSession();
+        if (session && session.clock_in_time) {
+          const clockInTimeMs = new Date(session.clock_in_time).getTime();
+          const nowMs = Date.now();
+          const initialElapsed = Math.floor(Math.max(nowMs - clockInTimeMs, 0) / 1000);
+          setSecondsElapsed(initialElapsed);
+        }
+      } catch (e) {
+        console.error("Failed syncing chronometer:", e);
+      }
+      
+      interval = setInterval(() => {
+        setSecondsElapsed((prev) => prev + 1);
+      }, 1000);
+    };
+    
+    initTimer();
     return () => clearInterval(interval);
   }, []);
 

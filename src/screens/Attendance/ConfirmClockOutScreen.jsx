@@ -2,29 +2,45 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clockOut } from '../../services/attendanceService';
+import Geolocation from 'react-native-geolocation-service';
 import { COLORS } from '../../constants/colors';
 import { LogOut, Clock as ClockIcon } from 'lucide-react-native';
 import BackButton from '../../components/BackButton';
 import StoreInfoCard from '../../components/StoreInfoCard';
 
 const ConfirmClockOutScreen = ({ route, navigation }) => {
-  const { store, status, startTime } = route.params;
+  const { store, status, startTime, session_id } = route.params;
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleConfirm = async () => {
     setLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      await AsyncStorage.removeItem('active_session');
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'ClockOutSuccess', params: { store, status, startTime } }],
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMsg('');
+    Geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          
+          await clockOut(session_id, latitude, longitude);
+          
+          await AsyncStorage.removeItem('active_session');
+          
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'ClockOutSuccess', params: { store, status, startTime } }],
+          });
+        } catch (err) {
+          setErrorMsg(typeof err === 'string' ? err : 'Clock out rejection: Backend termination failed.');
+          setLoading(false);
+        }
+      },
+      (geoError) => {
+        setErrorMsg('Location blocked. Geofence constraints prevent remote clock-outs.');
+        setLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
   };
 
   const today = new Date();
@@ -62,6 +78,8 @@ const ConfirmClockOutScreen = ({ route, navigation }) => {
           timeString={timeString}
           totalHours={totalHours}
         />
+
+        {errorMsg ? <Text style={{color: '#DC2626', textAlign: 'center', marginBottom: 15, paddingHorizontal: 20}}>{errorMsg}</Text> : null}
 
         {/* Custom Action Button */}
         <TouchableOpacity

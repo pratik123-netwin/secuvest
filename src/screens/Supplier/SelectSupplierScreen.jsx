@@ -10,8 +10,10 @@ import SupplierCard from '../../components/common/SupplierCard';
 import FloatingActionButton from '../../components/common/FloatingActionButton';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ErrorState from '../../components/common/ErrorState';
 import { getSuppliers } from '../../services/supplierService';
+import { getRegions } from '../../services/attendanceService';
 
 const SelectSupplierScreen = ({ route, navigation }) => {
   const { preSelectedSuppliers = [] } = route?.params || {};
@@ -34,35 +36,66 @@ const SelectSupplierScreen = ({ route, navigation }) => {
   const [sortAZ, setSortAZ] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
-  const loadSuppliers = useCallback(async () => {
+  const [regions, setRegions] = useState([]);
+
+  // Load regions natively on mount
+  useEffect(() => {
+    const fetchConstants = async () => {
+      try {
+        const fetchedRegions = await getRegions();
+        setRegions(fetchedRegions);
+      } catch (e) {
+        console.error("Filter constants load fail:", e);
+      }
+    };
+    fetchConstants();
+  }, []);
+
+  const fetchSuppliersData = async (query = '', region = '', sort = false) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const data = await getSuppliers();
-      setSuppliers(data);
+      const params = {};
+      if (query) params.search = query;
+      if (region) params.region_id = region;
+      if (sort) params.sort = 'az';
+
+      const data = await getSuppliers(params);
+      const items = Array.isArray(data) ? data : (data?.rows || []);
+
+      const storedFavs = await AsyncStorage.getItem('favourite_suppliers');
+      const favouriteIds = storedFavs ? JSON.parse(storedFavs) : [];
+
+      const mergedData = items.map(s => ({
+        ...s,
+        isFavorite: favouriteIds.includes(s.id)
+      }));
+
+      setSuppliers(mergedData);
     } catch (e) {
-      setError('Failed to load suppliers. Please try again.');
+      setError(typeof e === 'string' ? e : 'Failed to load suppliers. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  useEffect(() => { loadSuppliers(); }, [loadSuppliers]);
+  // Debounced API execution
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchSuppliersData(searchQuery, selectedRegion, sortAZ);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, selectedRegion, sortAZ]);
 
   const filteredSuppliers = suppliers
     .filter(s => {
-      const q = searchQuery.toLowerCase();
-      const matchesSearch = s.name.toLowerCase().includes(q) || s.location.toLowerCase().includes(q);
-      const matchesFav = favoritesOnly ? s.isFavorite : true;
-      const matchesRegion = selectedRegion ? s.location === selectedRegion : true;
-      return matchesSearch && matchesFav && matchesRegion;
+      // Backend handles search, region, and sort. Only handle local favourites filtering.
+      return favoritesOnly ? s.isFavorite : true;
     })
     .sort((a, b) => {
-      // Favourites always bubble to the top
+      // Favourites bubble to the top visually on the client
       if (a.isFavorite && !b.isFavorite) return -1;
       if (!a.isFavorite && b.isFavorite) return 1;
-      // Within groups: A-Z if toggled
-      if (sortAZ) return a.name.localeCompare(b.name);
       return 0;
     });
 
@@ -78,8 +111,24 @@ const SelectSupplierScreen = ({ route, navigation }) => {
     setSingleSelectedId(prev => prev === supplier.id ? null : supplier.id);
   };
 
-  const toggleFavorite = (id) => {
+  const toggleFavorite = async (id) => {
+    const sIdx = suppliers.findIndex(s => s.id === id);
+    if (sIdx === -1) return;
+
+    // Optimistic state toggle
     setSuppliers(prev => prev.map(s => s.id === id ? { ...s, isFavorite: !s.isFavorite } : s));
+
+    // Update local AsyncStorage
+    try {
+      const stored = await AsyncStorage.getItem('favourite_suppliers');
+      const favouriteIds = stored ? JSON.parse(stored) : [];
+      const updated = favouriteIds.includes(id)
+        ? favouriteIds.filter(f => f !== id)
+        : [...favouriteIds, id];
+      await AsyncStorage.setItem('favourite_suppliers', JSON.stringify(updated));
+    } catch (e) {
+      console.error("Local favorite sync failed", e);
+    }
   };
 
   const handleSingleContinue = () => {
@@ -135,7 +184,7 @@ const SelectSupplierScreen = ({ route, navigation }) => {
       {loading ? (
         <LoadingSkeleton count={4} cardHeight={110} />
       ) : error ? (
-        <ErrorState message={error} onRetry={loadSuppliers} />
+        <ErrorState message={error} onRetry={() => fetchSuppliersData(searchQuery, selectedRegion, sortAZ)} />
       ) : (
         <FlatList
           data={filteredSuppliers}
@@ -167,7 +216,7 @@ const SelectSupplierScreen = ({ route, navigation }) => {
         visible={filterVisible}
         onClose={() => setFilterVisible(false)}
         retailers={[]}
-        regions={['Sunnyvale', 'Riverwood', 'Maple Grove', 'Cedar Valley', 'Ocean City']}
+        regions={regions}
         selectedRetailer=""
         setSelectedRetailer={() => { }}
         selectedRegion={selectedRegion}

@@ -8,6 +8,9 @@ import BackButton from '../../components/BackButton';
 import TabBar from '../../components/common/TabBar';
 import SupplierOverviewTab from './SupplierOverviewTab';
 import SupplierProductsTab from './SupplierProductsTab';
+import ErrorState from '../../components/common/ErrorState';
+import LoadingSkeleton from '../../components/common/LoadingSkeleton';
+import { getSupplierDetails } from '../../services/supplierService';
 import LinearGradient from 'react-native-linear-gradient';
 
 const TABS = ['Overview', 'Products'];
@@ -17,8 +20,33 @@ const TABS = ['Overview', 'Products'];
  * Reached by tapping a product card on SupplierProfileScreen.
  */
 const SupplierDetailScreen = ({ route, navigation }) => {
-  const { supplier = {} } = route.params;
+  const { supplier = {}, supplierId } = route.params || {};
   const [activeTab, setActiveTab] = useState('Overview');
+  const [liveSupplier, setLiveSupplier] = useState(supplier);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const id = supplierId || supplier.id;
+
+  React.useEffect(() => {
+    if (!id) return;
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getSupplierDetails(id);
+        setLiveSupplier(data);
+      } catch (err) {
+        setError(typeof err === 'string' ? err : 'Failed to fetch supplier profile.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [id]);
+
+  if (loading) return <SafeAreaView style={styles.container}><LoadingSkeleton count={1} cardHeight={120} /></SafeAreaView>;
+  if (error) return <SafeAreaView style={styles.container}><ErrorState message={error} /></SafeAreaView>;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -41,8 +69,8 @@ const SupplierDetailScreen = ({ route, navigation }) => {
           <Building2 size={22} color="#FFFFFF" strokeWidth={1.5} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.summaryTitle}>{supplier.name || 'Supplier'}</Text>
-          <Text style={styles.summarySubtitle}>{supplier.location || ''}</Text>
+          <Text style={styles.summaryTitle}>{liveSupplier.name || 'Supplier'}</Text>
+          <Text style={styles.summarySubtitle}>{liveSupplier.location || ''}</Text>
         </View>
       </LinearGradient>
 
@@ -51,9 +79,9 @@ const SupplierDetailScreen = ({ route, navigation }) => {
 
       {/* Tab Content */}
       {activeTab === 'Overview' ? (
-        <SupplierOverviewTab supplierId={supplier.id} navigation={navigation} />
+        <SupplierOverviewTab supplierId={id} navigation={navigation} />
       ) : (
-        <SupplierProductsTab supplierId={supplier.id} />
+        <SupplierProductsTab supplierId={id} navigation={navigation} />
       )}
     </SafeAreaView>
   );

@@ -21,10 +21,22 @@ const HomeScreen = ({ navigation }) => {
           if (session) {
             const parsed = JSON.parse(session);
             setActiveSession(parsed);
-            const diffMs = Date.now() - parsed.startTime;
-            const diffHrs = Math.floor(diffMs / 3600000);
-            const diffMins = Math.floor((diffMs % 3600000) / 60000);
-            setElapsedText(`${diffHrs}h ${diffMins}m`);
+
+            // Support both clock_in_time (ISO string from backend) and
+            // legacy startTime (numeric ms) saved by old local sessions.
+            const rawTime = parsed.clock_in_time || parsed.clockInTime || parsed.startTime;
+            const startMs = rawTime
+              ? (typeof rawTime === 'number' ? rawTime : new Date(rawTime).getTime())
+              : null;
+
+            if (startMs && !isNaN(startMs)) {
+              const diffMs = Date.now() - startMs;
+              const diffHrs = Math.floor(diffMs / 3600000);
+              const diffMins = Math.floor((diffMs % 3600000) / 60000);
+              setElapsedText(`${diffHrs}h ${diffMins}m`);
+            } else {
+              setElapsedText('');
+            }
           } else {
             setActiveSession(null);
           }

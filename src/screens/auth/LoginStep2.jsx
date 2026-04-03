@@ -8,22 +8,42 @@ import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import AuthHeader, { AuthFooter } from '../../components/AuthHeader';
 import { validatePassword } from '../../utils/validation';
-import { login } from '../../store/slices/authSlice';
+import { setCredentials, setLoading, setError as setAuthError } from '../../store/slices/authSlice';
+import { loginAPI } from '../../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/colors';
 
 const LoginStep2 = ({ route, navigation }) => {
   const { emailOrPhone } = route.params;
   const dispatch = useDispatch();
-  const { loading, error: authError } = useSelector((state) => state.auth);
+  const { isLoading: loading, error: authError } = useSelector((state) => state.auth);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const valError = validatePassword(password);
     if (valError) { setError(valError); return; }
     setError('');
-    dispatch(login({ emailOrPhone, password, rememberMe }));
+    dispatch(setAuthError(null));
+    dispatch(setLoading(true));
+    try {
+      const { token, user } = await loginAPI(emailOrPhone, password);
+      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      // TODO: Handle 30 days token expiry if needed by storing rememberMe flag or similar
+      dispatch(setCredentials({ token, user }));
+      dispatch(setLoading(false));
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'RootTabs' }],
+      });
+    } catch (err) {
+      dispatch(setLoading(false));
+      // Safely parse local Javascript Error objects as well as our thrown API string messages
+      const safeErrorMessage = typeof err === 'string' ? err : (err?.message || 'Authentication error.');
+      dispatch(setAuthError(safeErrorMessage));
+    }
   };
 
   return (
@@ -59,6 +79,8 @@ const LoginStep2 = ({ route, navigation }) => {
             password
           />
 
+          <CustomButton title="Sign In" onPress={handleLogin} loading={loading} />
+
           <View style={styles.checkboxRow}>
             <TouchableOpacity style={styles.checkboxContainer} onPress={() => setRememberMe(!rememberMe)} activeOpacity={0.8}>
               <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
@@ -70,8 +92,6 @@ const LoginStep2 = ({ route, navigation }) => {
               <Text style={styles.forgotPassword}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
-
-          <CustomButton title="Sign In" onPress={handleLogin} loading={loading} />
 
           <View style={styles.createAccountContainer}>
             <Text style={styles.createAccountText}>Don't have an account? </Text>
